@@ -1,0 +1,20 @@
+{% for image in visibleItems %}
+    {# Each "image" is an Image model object. #}
+    {{ image.title }}<br />
+{% endfor %}
+
+<div class="pagination">
+    <span class="step-links">
+        {% if visibleItems.has_previous %}
+             <a href="{% url 'uatracker:imageList' visibleItems.previous_page_number %}">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ visibleItems.number }} of {{ visibleItems.paginator.num_pages }}.
+        </span>
+
+        {% if visibleItems.has_next %}
+            <a href="{% url 'uatracker:imageList' visibleItems.next_page_number %}">next</a>
+        {% endif %}
+    </span>
+</div>
