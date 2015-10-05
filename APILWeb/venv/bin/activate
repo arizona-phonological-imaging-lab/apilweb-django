@@ -39,7 +39,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="/Volumes/Data/Mohsen/Computer-and-Programming-projects/Eclipse-Workspace/APILWeb/venv"
+VIRTUAL_ENV="/Users/mohsen/git/ApilWebDjango/APILWeb/venv"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"

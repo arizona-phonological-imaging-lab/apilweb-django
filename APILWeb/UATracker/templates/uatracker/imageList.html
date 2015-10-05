@@ -1,9 +1,32 @@
+{% load staticfiles %}
+<link rel="stylesheet" type="text/css" href="{% static 'UATracker/style.css' %}" />
+
+
+<div class ="all"> 
+
+<!-- THE SEARCH BOX -->
+<div class="generalBox searchBox">
+	salam
+</div>
+<!-- THE TABLE -->
+<div class="generalBox mainTable">
+	<div class="mainTableRow headRow">
+		<div class="cell titleCell">Title</div>
+		<div class="cell videoCell">Video</div>
+		<div class="cell segmentsCell">Segments</div>
+		<div class="cell wordCell">Word</div>
+	</div>
 {% for image in visibleItems %}
-    {# Each "image" is an Image model object. #}
-    {{ image.title }}<br />
+	<div class="mainTableRow">
+		<div class="cell titleCell">{{ image.title }}</div>
+		<div class="cell videoCell">{{ image.video.title }}</div>
+		<div class="cell segmentsCell">{{ image.getSegmentSequence }}&nbsp;</div>
+		<div class="cell wordCell">{{ image.word.spelling }}&nbsp;</div>
+    </div>
 {% endfor %}
 
-<div class="pagination">
+	<!-- Pagination -->
+	<div class="pagination">
     <span class="step-links">
         {% if visibleItems.has_previous %}
              <a href="{% url 'uatracker:imageList' visibleItems.previous_page_number %}">previous</a>
@@ -17,4 +40,9 @@
             <a href="{% url 'uatracker:imageList' visibleItems.next_page_number %}">next</a>
         {% endif %}
     </span>
+</div>
+</div>
+
+
+
 </div>

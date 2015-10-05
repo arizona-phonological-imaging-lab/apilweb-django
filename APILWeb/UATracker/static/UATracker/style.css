@@ -1,0 +1,55 @@
+body{
+	font-family: Calibri, Tahoma;
+}
+.all{
+	margin: 0 auto;
+	width: 800px;
+	
+}
+.generalBox{
+	background-color: lightblue;
+	padding: 10px;
+	border-radius: 0.2em;
+	
+}
+.searchBox{
+	margin-bottom: 15px;
+}
+.mainTable{
+	border-radius: 0em;
+	margin-bottom: 15px;
+	padding: 2px;
+	font-size: 15px;
+}
+.pagination{
+	margin: 0 auto;
+	width: 200px;
+}
+.mainTableRow{
+	background-color: white;
+	margin-bottom: 2px;
+	display: block;
+	height: 22px;
+	width: 790px;
+}
+.cell{
+	float: left;
+	width: 100px;
+	margin-left: 2px;
+	border-right: 1px solid lightblue;
+	padding-right: 3px;
+	padding-left: 3px;
+	padding-top: 2px;
+	padding-bottom: 2px;
+	overflow: scroll;
+	white-space: nowrap;
+}
+.headRow{
+	text-align: center;
+	font-weight: bold;
+	background-color: #59b;
+	color: white;
+}
+.videoCell{
+	width: 110px;
+}

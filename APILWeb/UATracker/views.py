@@ -4,7 +4,7 @@ from UATracker.models import Image
 
 def imageListView(request, page):
     fullList = Image.objects.all()
-    paginator = Paginator(fullList, 25) # Show 25 images per page
+    paginator = Paginator(fullList, 20) # Show 25 images per page
 
     try:
         visibleItems = paginator.page(page)

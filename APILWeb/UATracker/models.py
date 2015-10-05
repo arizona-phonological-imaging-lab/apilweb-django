@@ -35,7 +35,7 @@ class ExperimentAssociation(models.Model):
 class Word(models.Model):
     spelling = models.TextField(blank=True, null=True)
     segment_sequence = models.TextField(blank=True, null=True)
-    segment_sequence = models.TextField(blank=True, null=True)
+    segment_id_sequence = models.TextField(blank=True, null=True)
 
     class Meta:
         managed = False
@@ -83,7 +83,22 @@ class Image(models.Model):
     autotraced = models.TextField(blank=True, null=True)  # This field type is a guess.
     title = models.TextField(blank=True, null=True)
     is_bad = models.TextField(blank=True, null=True)  # This field type is a guess.
-
+    def getSegmentSequence(self):
+        ids = self.word.segment_id_sequence.split(" ")
+        segs = [Segment.objects.get(pk=theid).spelling for theid in ids]
+        result = ""
+        if not self.segment_id:
+            return result
+        for i in range(len(segs)):
+            seg = segs[i]
+            theid = ids[i]
+            if theid==str(self.start_segment_id) or theid==str(self.end_segment_id) :
+                result = result+"("+seg+") "
+            elif theid == str(self.segment_id):
+                result = result+"["+seg+"] "
+            else:
+                result = result+seg+" "
+        return result
     class Meta:
         managed = False
         db_table = 'image'

@@ -32,7 +32,7 @@ end
 # unset irrelevant variables
 deactivate nondestructive
 
-set -gx VIRTUAL_ENV "/Volumes/Data/Mohsen/Computer-and-Programming-projects/Eclipse-Workspace/APILWeb/venv"
+set -gx VIRTUAL_ENV "/Users/mohsen/git/ApilWebDjango/APILWeb/venv"
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/bin" $PATH
