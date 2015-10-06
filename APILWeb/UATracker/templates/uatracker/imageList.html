@@ -20,7 +20,7 @@
 	<div class="mainTableRow">
 		<div class="cell titleCell">{{ image.title }}</div>
 		<div class="cell videoCell">{{ image.video.title }}</div>
-		<div class="cell segmentsCell">{{ image.getSegmentSequence }}&nbsp;</div>
+		<div class="cell segmentsCell">{{ image.getSegmentSequenceColored |safe }}&nbsp;</div>
 		<div class="cell wordCell">{{ image.word.spelling }}&nbsp;</div>
     </div>
 {% endfor %}

@@ -14,6 +14,7 @@
 from __future__ import unicode_literals
 
 from django.db import models
+import re
 
 
 class Experiment(models.Model):
@@ -99,6 +100,13 @@ class Image(models.Model):
             else:
                 result = result+seg+" "
         return result
+    def getSegmentSequenceColored(self):
+        segSeq = self.getSegmentSequence();
+        segSeq = re.sub('\[',r"<span style='color:red'>",segSeq)
+        segSeq = re.sub('\]',r"</span>",segSeq)
+        segSeq = re.sub('\(',r"<span style='color:#c8f'>",segSeq)
+        segSeq = re.sub('\)',r"</span>",segSeq)
+        return segSeq
     class Meta:
         managed = False
         db_table = 'image'
