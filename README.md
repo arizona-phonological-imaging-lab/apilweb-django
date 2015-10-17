@@ -2,7 +2,7 @@
 
 #####
 
-## How to run the app
+# How to run the app
 
 ## Accessing the test database
 
@@ -64,7 +64,7 @@ Be careful not to add unnecessary dependencies to `requirements.txt`
 
 `deactivate`
 
-## Active apps
+# Active apps
 This section describes our current working apps.  
 
 ### `UATracker`
@@ -72,3 +72,34 @@ This section describes our current working apps.
 You may view a sample of database entries at this url:  
 
 http://localhost:8000/uat/1/
+
+# Developing new apps
+
+Please develop your app on a branch:
+
+If you were making an app called `analysis`, branch off of master in the following way:
+
+`git checkout master`
+`git checkout -b analysis`
+
+Make your app and test it.  
+
+`python mange.py startapp analysis`  
+
+When you're ready, merge it into master:
+
+`git checkout master`
+
+Remember to `pull`!
+
+`git pull`
+
+Now merge:
+
+`git merge analysis`
+
+If the merge is successful (or you've resolved any conflicts), go ahead and `push`:
+
+`git push`
+
+...and update the `README`!
