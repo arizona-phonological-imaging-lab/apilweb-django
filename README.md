@@ -6,7 +6,7 @@
 
 ## Accessing the test database
 
-To interact with the test database, you will need the [Git Large File Storage extensions](https://git-lfs.github.com/).  This is the recommended way to handle large files (or files that could eventually become quite large).
+To interact with the test database, you will need the [Git Large File Storage extension](https://git-lfs.github.com/).  This is the recommended way to handle large files (or files that could eventually become quite large).
 
 For OSX users, the extension can be installed via `homebrew`:  
 
@@ -38,7 +38,7 @@ From the project directory, `source venv/bin/activate`
 After activating the vm, make sure you have all of the necessary dependencies installed.  Simply type:  
 `pip install -r requirements.txt`  
 
-### 3) Run the web app locally
+### 3) Running the web app locally
 
   1. From the project directory, type:  
 `python manage.py runserver`  
@@ -56,16 +56,19 @@ Install a new package:
 
 `pip install <some package name here>`
 
-Update `requirements.txt`:  
+Update `requirements.txt`:
+
 `pip freeze > requirements.txt`
 
-Be careful not to add unnecessary dependencies to `requirements.txt`
+Be careful not to add unnecessary dependencies to `requirements.txt`  
+
 ## Exiting the virtual environment
 
 `deactivate`
 
 # Active apps
-This section describes our current working apps.  
+
+This section describes our current apps.  
 
 ### `UATracker`
 
@@ -77,7 +80,7 @@ http://localhost:8000/uat/1/
 
 Please develop your app on a branch:
 
-If you were making an app called `analysis`, branch off of master in the following way:
+If you wanted to make an app called `analysis`, branch off of master in the following way:
 
 `git checkout master`
 `git checkout -b analysis`
@@ -86,7 +89,9 @@ Make your app and test it.
 
 `python manage.py startapp analysis`  
 
-When you're ready, merge it into master:
+Create a simple `README` for your app (at `APILWeb/analysis/README.md`)  
+
+When you're ready, merge it into `master`:
 
 `git checkout master`
 
@@ -94,7 +99,7 @@ Remember to `pull`!
 
 `git pull`
 
-Now merge:
+Now `merge`:
 
 `git merge analysis`
 
@@ -102,4 +107,4 @@ If the merge is successful (or you've resolved any conflicts), go ahead and `pus
 
 `git push`
 
-...and update the `README`!
+Please update the "Active apps" section of the project `README` with a short description of your app.
