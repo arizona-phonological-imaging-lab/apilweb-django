@@ -35,6 +35,10 @@ venv/*
 *.iml
 *.iws
 
+# Eclipse
+.pydevproject
+.project
+
 # Mac
 .DS_Store
 
