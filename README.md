@@ -84,7 +84,7 @@ If you were making an app called `analysis`, branch off of master in the followi
 
 Make your app and test it.  
 
-`python mange.py startapp analysis`  
+`python manage.py startapp analysis`  
 
 When you're ready, merge it into master:
 
