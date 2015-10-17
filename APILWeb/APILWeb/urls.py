@@ -18,5 +18,6 @@ from django.contrib import admin
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
+    # for accessing the uatracker database ui
     url(r'^uat/', include('UATracker.urls',namespace='uatracker'))
 ]
