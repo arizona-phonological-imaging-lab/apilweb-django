@@ -1,0 +1,174 @@
+<!-- extend base layout -->
+{% extends "base.html" %}
+
+{% load staticfiles %}
+
+{% block title %}APIL{% endblock %}
+{% spaceless %}
+{% block scripts %}
+{{ block.super }}
+<script type="text/javascript" src="{% static 'js/underscore.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/ultrasoundtrace.js' %}"></script>
+</script>
+{% endblock scripts %}
+{% endspaceless %}
+{% block styles %}
+{{ block.super }}
+<link href="{% static 'bootstrap/css/bootstrap.min.css' %}"
+      rel="stylesheet" media="screen">
+<style type="text/css">
+
+    body {
+        background: #F0F0F0;
+    }
+
+    #tracearea {
+        background-image: url("{% static 'images/do-not-save.png'%}");
+        cursor: crosshair;
+        display: block;
+        border: 2px solid lightslategrey;
+    }
+
+    .btn-file {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-file input[type=file] {
+        position: absolute;
+        top: 0;
+        right: 0;
+        min-width: 100%;
+        min-height: 100%;
+        font-size: 100px;
+        text-align: right;
+        filter: alpha(opacity=0);
+        opacity: 0;
+        outline: none;
+        background: white;
+        cursor: inherit;
+        display: block;
+    }
+
+    .top-buffer {
+        margin-top: 10px;
+    }
+
+    .loader {
+        position: fixed;
+        left: 0px;
+        top: 0px;
+        width: 100%;
+        height: 100%;
+        z-index: 9999;
+        background: url("{% static 'images/page-loader.gif' %}") 50% 50% no-repeat rgb(249, 249, 249);
+    }
+
+    .container-fluid {
+        padding: 0 15px;
+    }
+
+    .tarea {
+
+        resize: both;
+
+    }
+</style>
+{% endblock styles %}
+
+{% block content %}
+<div class="container centered">
+
+<div class="loader"></div>
+<div id="trace-zone">
+    <canvas id="tracearea" width="720" height="480"></canvas>
+</div>
+<br>
+
+<div class="container-fluid">
+    <div class="row form-horizontal">
+        <div class="col-md-10">
+            <button id="pen" class="btn btn-primary" type="button">
+                <span class="glyphicon glyphicon-pencil"></span>
+                Pen
+            </button>
+
+              <div class="btn-group"> <i class="dropdown-arrow dropdown-arrow-inverse"></i>
+                <button class="btn btn-primary dropdown-toggle" data-toggle="dropdown">R o I
+                  <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu dropdown-inverse">
+                  <li><a id="maximize-roi" href="#max-roi"><span class="glyphicon glyphicon-resize-full"></span> maximize</a></li>
+                  <li><a id="constrain-roi" href="#constrain-roi"><span class="glyphicon glyphicon-resize-small"></span> constrain</a></li>
+                </ul>
+              </div>
+            <button id="eraser" class="btn btn-info" type="button">
+                <span class="fa fa-eraser"></span>
+                Eraser
+            </button>
+            <!-- <button id="smooth" class="btn btn-success" type="button">Smooth</button> -->
+            <button id="clear" class="btn btn-danger" type="button">
+                <span class="glyphicon glyphicon-remove"></span>
+                Clear
+            </button>
+            <button id="back" class="btn btn-inverse">
+                <span class="glyphicon glyphicon-arrow-left"></span> Back
+            </button>
+            <button id="advance" class="btn btn-inverse" type="button">Next
+                <span class="glyphicon glyphicon-arrow-right"></span>
+            </button>
+
+            <div class="btn-group"> <i class="dropdown-arrow dropdown-arrow-inverse"></i>
+              <button class="btn btn-primary dropdown-toggle" data-toggle="dropdown"> Load
+                <span class="caret"></span>
+              </button>
+              <ul class="dropdown-menu dropdown-inverse">
+                <li><a id="load-image-data" href="#load-images"><span class="fa fa-picture-o"></span>  Images</a></li>
+                <li><a id="load-trace-data" href="#load-traces"><span class="fa fa-ellipsis-h"></span>  Traces</a></li>
+                <li><a id="load-prev-data" href="#load-previous-data"><span class="fa fa-refresh"></span>  Load recent data</a></li>
+                <li><a id="clear-prev-data" href="#clear-previous-data"><span class="fa fa-trash-o"></span>  Clear saved data</a></li>
+              </ul>
+            </div>
+      </div>
+  </div>
+
+<div hidden>
+  <input type="file" id="load-images" multiple accept="image/*"/>
+  <input type="file" id="load-traces" accept="application/json"/>
+</div>
+
+    <div class="row top-buffer">
+
+        <div class="col-md-8 container-fluid">
+            <span id="image-name" class="col-md-offset-1 lead">do-not-save.png</span>
+            <span id="image-num" class="col-md-offset-2 lead text-muted text-right">1 of 1</span>
+        </div>
+    </div>
+
+    {{ form }}
+            <!--<span class="glyphicon glyphicon-download"></span>-->
+</div>
+{% include 'flash.html' %}
+</div>
+
+<div class="modal" id="missing-images-modal">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
+        <h4 class="modal-title"><span id="missing-images-title"></span></h4>
+      </div>
+      <div class="modal-body">
+      <divclass="content-div">
+        <label>Load these files to view cached trace data.</label>
+      <textarea readonly id="missing-files" rows="7" class="form-control"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- <input type="button" id="clickMe" value="clickme" onclick="previewFile();" /> -->
+{% endblock content %}
