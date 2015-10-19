@@ -55,7 +55,8 @@ class Project(models.Model):
     title = models.TextField(blank=True, null=True)
     language = models.TextField(blank=True, null=True)  # This field type is a guess.
     folder_address = models.TextField(blank=True, null=True)
-
+    def toString(self):
+        return self.title;
     class Meta:
         managed = False
         db_table = 'project'

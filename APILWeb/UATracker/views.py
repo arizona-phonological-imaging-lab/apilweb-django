@@ -1,8 +1,10 @@
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render_to_response
 from UATracker.models import Image
+from UATracker.forms import SearchForm
 
 def imageListView(request, page):
+    form = SearchForm()
     fullList = Image.objects.all()
     paginator = Paginator(fullList, 20) # Show 25 images per page
 
@@ -15,4 +17,11 @@ def imageListView(request, page):
         # If page is out of range (e.g. 9999), deliver last page of results.
         visibleItems = paginator.page(paginator.num_pages)
 
-    return render_to_response('uatracker/imageList.html', {"visibleItems": visibleItems})
+    return render_to_response('uatracker/imageList.html', {"visibleItems": visibleItems, 'form': form})
+
+
+def searchHandlerView():
+    response_data = {}
+    
+
+

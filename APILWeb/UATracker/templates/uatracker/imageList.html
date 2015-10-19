@@ -1,25 +1,38 @@
 {% load staticfiles %}
 <link rel="stylesheet" type="text/css" href="{% static 'UATracker/style.css' %}" />
+<script type="text/javascript" src="{% static 'UATracker/js/jquery.js' %}" ></script>
+<script type="text/javascript" src="{% static 'UATracker/js/general.js' %}" ></script>
 
 
 <div class ="all"> 
 
 <!-- THE SEARCH BOX -->
 <div class="generalBox searchBox">
-	salam
+	<form action="/handle-search/" method="post" id="imageSearchForm">
+    	{% csrf_token %}
+    	<div>{{ form.theTitle.label_tag }} {{form.theTitle}}</div>
+    	<div>{{ form.video.label_tag }} {{form.video}}</div>
+    <input type="submit" value="Submit" />
+</form>
 </div>
 <!-- THE TABLE -->
 <div class="generalBox mainTable">
 	<div class="mainTableRow headRow">
 		<div class="cell titleCell">Title</div>
 		<div class="cell videoCell">Video</div>
+		<div class="cell projectCell">Project</div>
+		<div class="cell experimentCell">Experiment</div>
+		<div class="cell tagCell">Tag</div>
 		<div class="cell segmentsCell">Segments</div>
 		<div class="cell wordCell">Word</div>
 	</div>
 {% for image in visibleItems %}
 	<div class="mainTableRow">
-		<div class="cell titleCell">{{ image.title }}</div>
-		<div class="cell videoCell">{{ image.video.title }}</div>
+		<div class="cell titleCell">{{ image.title }}&nbsp;</div>
+		<div class="cell videoCell">{{ image.video.title }}&nbsp;</div>
+		<div class="cell projectCell">{{ image.video.project.title }}&nbsp;</div>
+		<div class="cell experimentCell">{{ image.experiment.title }}&nbsp;</div>
+		<div class="cell tagCell">{{ image.tag.title }}&nbsp;</div>
 		<div class="cell segmentsCell">{{ image.getSegmentSequenceColored |safe }}&nbsp;</div>
 		<div class="cell wordCell">{{ image.word.spelling }}&nbsp;</div>
     </div>

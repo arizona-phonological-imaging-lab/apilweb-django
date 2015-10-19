@@ -27,21 +27,21 @@ body{
 }
 .mainTableRow{
 	background-color: white;
-	margin-bottom: 2px;
+	margin-bottom: 1px;
 	display: block;
-	height: 22px;
-	width: 790px;
+	height: 24px;
+	width: 796px;
 }
 .cell{
 	float: left;
-	width: 100px;
+	width: 80px;
 	margin-left: 2px;
 	border-right: 1px solid lightblue;
 	padding-right: 3px;
 	padding-left: 3px;
 	padding-top: 2px;
 	padding-bottom: 2px;
-	overflow: scroll;
+	overflow: hidden;
 	white-space: nowrap;
 }
 .headRow{
@@ -51,5 +51,13 @@ body{
 	color: white;
 }
 .videoCell{
-	width: 110px;
+	width: 103px;
+}
+
+
+
+/* THE SEARCH BOX */
+label{
+	margin-right: 3px;
+	margin-left: 3px;
 }
