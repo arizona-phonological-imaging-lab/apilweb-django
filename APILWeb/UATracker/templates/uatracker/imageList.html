@@ -8,54 +8,52 @@
 
 <!-- THE SEARCH BOX -->
 <div class="generalBox searchBox">
-	<form action="/handle-search/" method="post" id="imageSearchForm">
+	<form action="/whatever/" method="post" id="imageSearchForm">
     	{% csrf_token %}
-    	<div>{{ form.theTitle.label_tag }} {{form.theTitle}}</div>
-    	<div>{{ form.video.label_tag }} {{form.video}}</div>
+    	<Table>
+    	<tr>
+    	<td>
+	    	<div class="searchBoxRow">{{ form.theTitle.label_tag }} </div>
+	    	<div class="searchBoxRow">{{ form.project.label_tag }} </div>
+	    	<div class="searchBoxRow">{{ form.experiment.label_tag }}</div>
+	    	<div class="searchBoxRow">{{ form.tag.label_tag }}</div>
+    	</td>
+    	<td style="padding-right: 60px;">
+    		<div class="searchBoxRow">{{form.theTitle}}</div>
+    		<div class="searchBoxRow">{{form.project}}</div>
+    		<div class="searchBoxRow">{{form.experiment}}</div>
+    		<div class="searchBoxRow">{{form.tag}}</div>
+    	</td>
+    	<td>
+	    	<div class="searchBoxRow">{{ form.language.label_tag }}</div>
+	    	<div class="searchBoxRow">{{ form.tracers.label_tag }} </div>
+	    	<div class="searchBoxRow">{{ form.traced_by.label_tag }} </div>
+	    	<div class="searchBoxRow">{{ form.autotraced.label_tag }}</div>
+	    </td>
+	    <td style="padding-right: 60px;">
+    		<div class="searchBoxRow">{{form.language}}</div>
+    		<div class="searchBoxRow">{{form.tracers}}</div>
+    		<div class="searchBoxRow">{{form.traced_by}}</div>
+    		<div class="searchBoxRow">{{form.autotraced}}</div>
+    	</td>
+    	<td style=" vertical-align: top;">
+    		<div class="searchBoxRow">{{ form.word.label_tag }}</div>
+	    	<div class="searchBoxRow">{{ form.segment.label_tag }}</div>
+	    	<div class="searchBoxRow">{{ form.peripherals.label_tag }}</div>
+	    	<div class="searchBoxRow">{{ form.show_only.label_tag }}</div>
+	    </td>
+	    <td style=" vertical-align: top;">
+	    	<div class="searchBoxRow">{{form.word}}</div>
+    		<div class="searchBoxRow">{{form.segment}}</div>
+    		<div class="searchBoxRow">{{form.peripherals}}</div>
+    		<div class="searchBoxRow">{{form.show_only}}</div>
+    	</td>
+    	</tr>
+    	</Table>
     <input type="submit" value="Submit" />
 </form>
 </div>
-<!-- THE TABLE -->
-<div class="generalBox mainTable">
-	<div class="mainTableRow headRow">
-		<div class="cell titleCell">Title</div>
-		<div class="cell videoCell">Video</div>
-		<div class="cell projectCell">Project</div>
-		<div class="cell experimentCell">Experiment</div>
-		<div class="cell tagCell">Tag</div>
-		<div class="cell segmentsCell">Segments</div>
-		<div class="cell wordCell">Word</div>
-	</div>
-{% for image in visibleItems %}
-	<div class="mainTableRow">
-		<div class="cell titleCell">{{ image.title }}&nbsp;</div>
-		<div class="cell videoCell">{{ image.video.title }}&nbsp;</div>
-		<div class="cell projectCell">{{ image.video.project.title }}&nbsp;</div>
-		<div class="cell experimentCell">{{ image.experiment.title }}&nbsp;</div>
-		<div class="cell tagCell">{{ image.tag.title }}&nbsp;</div>
-		<div class="cell segmentsCell">{{ image.getSegmentSequenceColored |safe }}&nbsp;</div>
-		<div class="cell wordCell">{{ image.word.spelling }}&nbsp;</div>
-    </div>
-{% endfor %}
 
-	<!-- Pagination -->
-	<div class="pagination">
-    <span class="step-links">
-        {% if visibleItems.has_previous %}
-             <a href="{% url 'uatracker:imageList' visibleItems.previous_page_number %}">previous</a>
-        {% endif %}
-
-        <span class="current">
-            Page {{ visibleItems.number }} of {{ visibleItems.paginator.num_pages }}.
-        </span>
-
-        {% if visibleItems.has_next %}
-            <a href="{% url 'uatracker:imageList' visibleItems.next_page_number %}">next</a>
-        {% endif %}
-    </span>
-</div>
-</div>
-
-
+{{ tableCode |safe }}
 
 </div>

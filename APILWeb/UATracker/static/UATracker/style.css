@@ -8,12 +8,13 @@ body{
 }
 .generalBox{
 	background-color: lightblue;
-	padding: 10px;
 	border-radius: 0.2em;
 	
 }
 .searchBox{
 	margin-bottom: 15px;
+	padding: 10px;
+	padding-bottom: 0px;
 }
 .mainTable{
 	border-radius: 0em;
@@ -60,4 +61,8 @@ body{
 label{
 	margin-right: 3px;
 	margin-left: 3px;
+}
+.searchBoxRow{
+	height: 20px;
+	margin-bottom: 9px;
 }
