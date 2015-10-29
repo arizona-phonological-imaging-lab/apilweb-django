@@ -14,10 +14,16 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include(blog_urls))
 """
 from django.conf.urls import include, url
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.contrib import admin
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
     # for accessing the uatracker database ui
-    url(r'^uat/', include('UATracker.urls',namespace='uatracker'))
+    url(r'^uat/', include('UATracker.urls',namespace='uatracker')),
+    # the tracer app
+    url(r'^tracer?/',
+    include('tracer.urls', namespace='tracer'))
 ]
+
+urlpatterns += staticfiles_urlpatterns()
