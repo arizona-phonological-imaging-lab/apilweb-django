@@ -1,3 +1,4 @@
+{% load extra_tags %}
 <!-- THE TABLE -->
 <div class="generalBox mainTable">
 	<div class="mainTableRow headRow">
@@ -11,7 +12,7 @@
 		<div class="cell wordCell">Word</div>
 	</div>
 {% for image in visibleItems %}
-	<div class="mainTableRow">
+	{% printAppropriateRowOpeningTag forloop.counter %}
 		<div class="cell titleCell">{{ image.title }}&nbsp;</div>
 		<div class="cell videoCell">{{ image.video.title }}&nbsp;</div>
 		<div class="cell projectCell">{{ image.video.project.title }}&nbsp;</div>

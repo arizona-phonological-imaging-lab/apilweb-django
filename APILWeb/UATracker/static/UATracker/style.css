@@ -30,7 +30,7 @@ body{
 	background-color: white;
 	margin-bottom: 1px;
 	display: block;
-	height: 24px;
+	height: 20px;
 	width: 796px;
 }
 .cell{
@@ -40,8 +40,8 @@ body{
 	border-right: 1px solid lightblue;
 	padding-right: 3px;
 	padding-left: 3px;
-	padding-top: 2px;
-	padding-bottom: 2px;
+	padding-top: -2px;
+	padding-bottom: 1px;
 	overflow: hidden;
 	white-space: nowrap;
 }
@@ -54,7 +54,17 @@ body{
 .videoCell{
 	width: 103px;
 }
-
+.wordCell{
+	width: 111px;
+	border-right: 0px;
+}
+.thickBottom{
+	border-bottom: 2px solid lightblue;
+}
+.shaded{
+	background-color: #efefef;
+	color: grey;
+}
 
 
 /* THE SEARCH BOX */

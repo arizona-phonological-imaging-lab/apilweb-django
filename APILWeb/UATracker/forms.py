@@ -18,8 +18,8 @@ class SearchForm(forms.Form):
     word.widget.attrs['style'] = "width:115px"
     segment = forms.CharField(label='Segment', max_length=80)
     segment.widget.attrs['style'] = "width:115px"
-    context = forms.CharField(label='Context', max_length=60)
-    context.widget.attrs['style'] = "width:115px"
+    segcontext = forms.CharField(label='Context', max_length=60)
+    segcontext.widget.attrs['style'] = "width:115px"
     show_only = forms.ChoiceField(label='Show only', choices= [["",""]]+[["Middle","Middle"], ["Second","Second"], ["Second to last","Second to last"], ["Initial","Initial"], ["Final","Final"]])
     show_only.widget.attrs['style'] = "width:115px"
     language = forms.ChoiceField(label='Language', choices= [["",""]]+[[lang[0],lang[0]] for lang in Project.objects.values_list('language').distinct()])

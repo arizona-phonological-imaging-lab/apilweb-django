@@ -57,20 +57,20 @@ class Video(models.Model):
         db_table = 'video'
 
 class Image(models.Model):
-    end_word = models.ForeignKey(Word, related_name='end_word')
-    start_word = models.ForeignKey(Word, related_name='start_word')
-    word = models.ForeignKey(Word, related_name='word')
-    end_segment = models.ForeignKey(Segment, related_name='end_segment')
-    start_segment = models.ForeignKey(Segment, related_name='start_segment')
-    segment = models.ForeignKey(Segment, related_name='segment')
-    video = models.ForeignKey(Video)
+    end_word = models.ForeignKey(Word, related_name='end_word', null=True)
+    start_word = models.ForeignKey(Word, related_name='start_word', null=True)
+    word = models.ForeignKey(Word, related_name='word', null=True)
+    end_segment = models.ForeignKey(Segment, related_name='end_segment', null=True)
+    start_segment = models.ForeignKey(Segment, related_name='start_segment', null=True)
+    segment = models.ForeignKey(Segment, related_name='segment', null=True)
+    video = models.ForeignKey(Video, null=True)
     address = models.TextField(blank=True, null=True)
     comment = models.TextField(blank=True, null=True)
     autotraced = models.TextField(blank=True, null=True)  # This field type is a guess.
     sorting_code = models.TextField(blank=True, null=True, db_index=True)
     trace_count = models.TextField(blank=True, null=True)
     readable_segment_sequence = models.TextField(blank=True, null=True)
-    title = models.TextField(blank=True, null=True, db_index=True)
+    title = models.TextField(blank=True, null=True)
     is_bad = models.TextField(blank=True, null=True)  # This field type is a guess.
     def getTagList(self):
         tags = Tag.objects.filter(image=self.pk)
@@ -121,6 +121,7 @@ class Image(models.Model):
     class Meta:
         managed = False
         db_table = 'image'
+#         index_together = ['video','title']
 
 class Tag(models.Model):
     image = models.ForeignKey(Image)

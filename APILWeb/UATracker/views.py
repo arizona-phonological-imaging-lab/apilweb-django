@@ -49,25 +49,34 @@ def searchHandlerView(request, page):
             result = advancedSegmentSearch(result,request.GET['segment'])
             
     thickBorders = {}
-    if len(request.GET['context'])>0 or len(request.GET['show_only'])>0:
-        conSize = request.GET['context']
+    shaded = {}
+    if (len(request.GET)>0 and len(request.GET['segcontext'])>0) or (len(request.GET)>0 and len(request.GET['show_only'])>0):
+        conSize = request.GET['segcontext']
         if len(conSize)>0:
             conSize = int(conSize)
         else:
             conSize = 0
-        result, thickBorders = calculateContext(result,conSize,request.GET['show_only'])
-        
+        result, thickBorders, shaded = calculateContext(result,conSize,request.GET['show_only'])
     paginator = Paginator(result, 20)
     visibleItems = paginator.page(page)
-    return render_to_response('uatracker/searchHandler.html', {"visibleItems": visibleItems, "urlrequest":request.GET.copy(), "thickBorders": thickBorders})
+    #Recalculate thickBorders and shaded based on page number
+    pageThickBorders = {}
+    pageShaded = {}
+    for i in range(1,21):
+        overallIndex = (int(page)-1)*20 + (i-1)
+        if overallIndex in thickBorders:
+            pageThickBorders[i] = 1
+        if overallIndex in shaded:
+            pageShaded[i] = 1
+    return render_to_response('uatracker/searchHandler.html', {"visibleItems": visibleItems, "urlrequest":request.GET.copy(), "pageThickBorders": pageThickBorders, "pageShaded": pageShaded})
 
-def getTargetSegment(input):
-    input = input.strip()
-    target = re.sub(".*\\[(\\w+)\\].*","\\1", input)
+def getTargetSegment(inputt):
+    inputt = inputt.strip()
+    target = re.sub(".*\\[(\\w+)\\].*","\\1", inputt)
     if len(target)>0:
         return target
     else:
-        return input
+        return inputt
 
 
 def advancedSegmentSearch(imageList, inputt):
@@ -93,9 +102,9 @@ def getContextImage(image, offset):
     for i in range(correctLength-(len(prefix)+len(lastPart))):
         zeros += "0"
     newTitle = prefix+zeros+lastPart
+    output = Image.objects.filter(title=newTitle).filter(video=image.video)
 #     import pdb
 #     pdb.set_trace()
-    output = Image.objects.filter(video=image.video).filter(title=newTitle)
     if len(output)>0:
         return output[0]
     else:
@@ -105,10 +114,13 @@ def getContextImage(image, offset):
 def calculateContext(result, conSize, showOnly):
     newResult = []
     thickBorders = {}       #It's a Dictionary (HashMap) but in fact I'm using it as a HashList. The values are always 1.
+    shaded = {}             #The same idea
     lastImage = None
     counter = 0
     currentSet = []
-    result.append(result[0])        #A dummy image added to the end so that we can do things when we get to the end of the list
+    result = [r for r in result]
+    if len(result)>0:
+        result.append(result[0])        #A dummy image added to the end so that we can do things when we get to the end of the list
     for image in result:
         if counter!=len(result)-1 and lastImage and image.segment==lastImage.segment:
             #We are in the middle of a continuous sequence
@@ -147,12 +159,14 @@ def calculateContext(result, conSize, showOnly):
                     contextImage = getContextImage(currentSet[0],-i)
                     if contextImage:
                         newResult.append(contextImage)
+                        shaded[len(newResult)-1] = 1
                 for im in currentSet:
                     newResult.append(im)
                 for i in range(1,conSize+1):
                     contextImage = getContextImage(currentSet[-1],i)
                     if contextImage:
                         newResult.append(contextImage)
+                        shaded[len(newResult)-1] = 1
                 thickBorders[len(newResult)-1] = 1
             #Start a new currentSet
             currentSet = []
@@ -160,4 +174,4 @@ def calculateContext(result, conSize, showOnly):
                 currentSet.append(image)
         lastImage = image
         counter += 1
-    return newResult, thickBorders
+    return newResult, thickBorders, shaded
