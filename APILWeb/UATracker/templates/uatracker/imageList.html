@@ -3,6 +3,9 @@
 <script type="text/javascript" src="{% static 'UATracker/js/jquery.js' %}" ></script>
 <script type="text/javascript" src="{% static 'UATracker/js/general.js' %}" ></script>
 
+<div class="centerDiv">
+	<button id ="button" type="button" onClick="openImport()">Import</button>
+</div>
 
 <div class ="all"> 
 
@@ -54,6 +57,14 @@
 </form>
 </div>
 
+
+
+
 {{ tableCode |safe }}
 
+</div>
+
+
+<div id="importDialog">
+	<button type="button" onclick="closeImport()">Close</button>
 </div>

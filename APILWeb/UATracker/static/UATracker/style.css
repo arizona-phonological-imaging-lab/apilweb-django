@@ -66,3 +66,27 @@ label{
 	height: 20px;
 	margin-bottom: 9px;
 }
+
+#importDialog{
+	height: 500px;
+	width: 400px;
+	position: fixed;
+	top: 5;
+	margin: auto;
+	background-color: white;
+	right: 0;
+	left: 0;
+	bottom:0;
+	border: grey solid 1px;
+	border-radius: 0.3em;
+	z-index: 2;	
+	visibility: hidden;
+}
+
+.centerDiv{
+	text-align: center;
+}
+
+#button{
+/*	position: absolute;
+*/	}
