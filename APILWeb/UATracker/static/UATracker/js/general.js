@@ -45,3 +45,38 @@ function closeImport() {
 	console.log("Import dialog closed");
 	$('#importDialog').css('visibility','hidden');
 }
+
+function deleteItem() {
+	var selection = document.getElementById("imageSequences");
+	console.log( "item " + selection.options[ selection.selectedIndex ].value + " deleted");
+}
+
+function addFile() {
+	console.log("file dialog opened");
+	var newThing = document.getElementById('addNew').value;
+		console.log("newThing grabbed"+newThing)
+		if (newThing) {
+			var startIndex = (newThing.indexOf('\\') >=0 ? newThing.lastIndexOf('\\') : newThing.lastIndexOf('/'));
+			var filename = newThing.substring(startIndex);
+			if (filename.indexOf('\\') === 0 || filename.indexOf('/') === 0) {
+				filename = filename.substring(1);
+			}
+		}
+		alert(newThing);
+		alert(filename);
+		//newThing.name
+	// $('#addNew').onchange=function(){
+	// 	var newThing = document.getElementById('addNew').value;
+	// 	console.log("newThing grabbed"+newThing)
+	// 	if (newThing) {
+	// 		var startIndex = (newThing.indexOf('\\') >=0 ? newThing.lastIndexOf('\\') : newThing.lastIndexOf('/'));
+	// 		var filename = newThing.substring(startIndex);
+	// 		if (filename.indexOf('\\') === 0 || filename.indexOf('/') === 0) {
+	// 			filename = filename.substring(1);
+	// 		}
+	// 	}
+	// 	alert(newThing);
+	// 	alert(filename);
+	// 	//newThing.name
+	// }
+}
