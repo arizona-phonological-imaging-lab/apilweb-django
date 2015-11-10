@@ -17,22 +17,6 @@ from django.db import models
 import re
 
 
-class Experiment(models.Model):
-    content = models.TextField(blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'experiment'
-
-
-class ExperimentAssociation(models.Model):
-    image = models.TextField(blank=True, null=True)  # This field type is a guess.
-    experiment = models.ForeignKey(Experiment)
-
-    class Meta:
-        managed = False
-        db_table = 'experiment_association'
-
 class Word(models.Model):
     spelling = models.TextField(blank=True, null=True)
     segment_sequence = models.TextField(blank=True, null=True)
@@ -83,16 +67,37 @@ class Image(models.Model):
     address = models.TextField(blank=True, null=True)
     comment = models.TextField(blank=True, null=True)
     autotraced = models.TextField(blank=True, null=True)  # This field type is a guess.
-    sorting_code = models.TextField(blank=True, null=True)
+    sorting_code = models.TextField(blank=True, null=True, db_index=True)
     trace_count = models.TextField(blank=True, null=True)
     readable_segment_sequence = models.TextField(blank=True, null=True)
-    title = models.TextField(blank=True, null=True)
+    title = models.TextField(blank=True, null=True, db_index=True)
     is_bad = models.TextField(blank=True, null=True)  # This field type is a guess.
+    def getTagList(self):
+        tags = Tag.objects.filter(image=self.pk)
+        tagContents = [t.content for t in tags]
+        result = ", ".join(tagContents)
+        return result
+    def getExperimentList(self):
+        exps = Experiment.objects.filter(image=self.pk)
+        expContents = [e.content for e in exps]
+        result = ", ".join(expContents)
+        return result
+    def getTracersList(self):
+        tracers = Tracer.objects.filter(trace__image=self.pk).values_list("first_name").distinct()
+        tracers = [t[0] for t in tracers]
+        result = ", ".join(tracers)
+        return result
     def getSegmentSequence(self):
         if (self.word==None or len(self.word.segment_id_sequence)==0):
             return ''
         ids = self.word.segment_id_sequence.split(" ")
-        segs = [Segment.objects.get(pk=theid).spelling for theid in ids]
+        segs = []
+        for theid in ids:
+            if theid=="0":
+                seg = "0"
+            else:
+                seg = Segment.objects.get(pk=theid).spelling
+            segs.append(seg)
         result = ""
         if not self.segment_id:
             return result
@@ -124,7 +129,15 @@ class Tag(models.Model):
     class Meta:
         managed = False
         db_table = 'tag'
-              
+
+class Experiment(models.Model):
+    image = models.ForeignKey(Image)
+    content = models.TextField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'experiment'
+    
 class Tracer(models.Model):
     first_name = models.TextField(blank=True, null=True)
 

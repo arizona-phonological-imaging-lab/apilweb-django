@@ -35,7 +35,7 @@ body{
 }
 .cell{
 	float: left;
-	width: 80px;
+	width: 85px;
 	margin-left: 2px;
 	border-right: 1px solid lightblue;
 	padding-right: 3px;
