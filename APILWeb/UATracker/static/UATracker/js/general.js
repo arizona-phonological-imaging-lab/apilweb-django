@@ -5,7 +5,18 @@ $(document).ready(function(event) {
 		window.history.pushState("object or string", "Title", "/uat/1/?"+$('#imageSearchForm').serialize());
 		submitSearch();
 	})
+	if (document.location.hostname == "localhost"){
+		$('#button').hide(0);
 
+	}
+
+	$('#i_file').change( function(event) {
+		addFile();
+		var tmppath = URL.createObjectURL(event.target.files[0]);
+		    $("img").fadeIn("fast").attr('src',URL.createObjectURL(event.target.files[0]));
+
+		    // $("#disp_tmp_path").html("Temporary Path(Copy it and try pasting it in browser address bar) --> <strong>["+tmppath+"]</strong>");
+	})
 
 });
 function submitSearch() {
@@ -53,7 +64,9 @@ function deleteItem() {
 
 function addFile() {
 	console.log("file dialog opened");
-	var newThing = document.getElementById('addNew').value;
+	var newThing = document.getElementById('i_file').value;
+	// $("#preview").fadeIn("fast").attr('src',URL.createObjectURL(event.target.files[0]));
+
 		console.log("newThing grabbed"+newThing)
 		if (newThing) {
 			var startIndex = (newThing.indexOf('\\') >=0 ? newThing.lastIndexOf('\\') : newThing.lastIndexOf('/'));
@@ -62,8 +75,7 @@ function addFile() {
 				filename = filename.substring(1);
 			}
 		}
-<<<<<<< HEAD
-		
+
 		var str = document.getElementById('path').value;
 		if (str.substr(str.length - 1) != '/'){
 			str = str + '/';
@@ -76,23 +88,4 @@ function addFile() {
 		
 		// this is the part where we send the new thing to the database adder
 
-=======
-		alert(newThing);
-		alert(filename);
-		//newThing.name
-	// $('#addNew').onchange=function(){
-	// 	var newThing = document.getElementById('addNew').value;
-	// 	console.log("newThing grabbed"+newThing)
-	// 	if (newThing) {
-	// 		var startIndex = (newThing.indexOf('\\') >=0 ? newThing.lastIndexOf('\\') : newThing.lastIndexOf('/'));
-	// 		var filename = newThing.substring(startIndex);
-	// 		if (filename.indexOf('\\') === 0 || filename.indexOf('/') === 0) {
-	// 			filename = filename.substring(1);
-	// 		}
-	// 	}
-	// 	alert(newThing);
-	// 	alert(filename);
-	// 	//newThing.name
-	// }
->>>>>>> parent of ff80ce9... enabled multiple file upload, enabled image preview, enabled filepath hack
 }
