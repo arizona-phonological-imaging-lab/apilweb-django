@@ -80,14 +80,10 @@
 			{% endfor %} -->
 			<option>Example</option>
 		</select>
-		<img src="" id="preview" width="200" style="display:none;" />
+		Preview goes here
 		<br>
 		<button type="button" onclick="deleteItem()">Delete</button>
-		<input type="file" id="i_file" multiple accept="image/*" ><br> <!-- onchange="addFile()" -->
-        <br>
-        Image Directory: <input type="text" value="/home/trevor/Downloads/" id="path"> <!-- value="/path/to/directory/frames/" -->
-		<div id="disp_tmp_path"></div>
-		<br>
+		<input type="file" multiple accept="image/*" onchange="addFile()" id="addNew"><br>
 		<input type="submit" value="Submit">
 		<button type="button" onclick="closeImport()">Close</button>
 	</form>

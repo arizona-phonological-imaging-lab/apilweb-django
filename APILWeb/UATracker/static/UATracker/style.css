@@ -68,8 +68,8 @@ label{
 }
 
 #importDialog{
-	height: 550px;
-	width: 500px;
+	height: 500px;
+	width: 400px;
 	position: fixed;
 	top: 5;
 	margin: auto;
