@@ -83,7 +83,9 @@ function addFile() {
 		}
 		var str = str + filename;
 		$("#disp_tmp_path").html("Complete Path: <strong>"+str+"</strong>");
+
 		
+
 		
 		// this is the part where we send the new thing to the database adder
 
