@@ -1,21 +1,25 @@
+{% load extra_tags %}
+<div id='midpagePanel'>
 <!-- THE TABLE -->
-<div class="generalBox mainTable">
-	<div class="mainTableRow headRow">
+<div class="generalBox mainTable" oncontextmenu="return false;">
+	<div class="headRow">
 		<div class="cell titleCell">Title</div>
 		<div class="cell videoCell">Video</div>
 		<div class="cell projectCell">Project</div>
+		<div class="cell tracedByCell">Traced by</div>
 		<div class="cell experimentCell">Experiment</div>
 		<div class="cell tagCell">Tag</div>
 		<div class="cell segmentsCell">Segments</div>
 		<div class="cell wordCell">Word</div>
 	</div>
 {% for image in visibleItems %}
-	<div class="mainTableRow">
+	{% printAppropriateRowOpeningTag forloop.counter %}
 		<div class="cell titleCell">{{ image.title }}&nbsp;</div>
 		<div class="cell videoCell">{{ image.video.title }}&nbsp;</div>
 		<div class="cell projectCell">{{ image.video.project.title }}&nbsp;</div>
-		<div class="cell experimentCell">{{ image.experiment.title }}&nbsp;</div>
-		<div class="cell tagCell">{{ image.tag.title }}&nbsp;</div>
+		<div class="cell tracedByCell">{{ image.getTracersList }}&nbsp;</div>
+		<div class="cell experimentCell">{{ image.getExperimentList }}&nbsp;</div>
+		<div class="cell tagCell">{{ image.getTagList }}&nbsp;</div>
 		<div class="cell segmentsCell">{{ image.getSegmentSequenceColored |safe }}&nbsp;</div>
 		<div class="cell wordCell">{{ image.word.spelling }}&nbsp;</div>
     </div>
@@ -25,7 +29,7 @@
 	<div class="pagination">
     <span class="step-links">
         {% if visibleItems.has_previous %}
-             <a href="{% url 'uatracker:imageList' visibleItems.previous_page_number %}">previous</a>
+             <a href="{% url 'uatracker:imageList' visibleItems.previous_page_number %}?{{ urlrequest.urlencode }}">previous</a>
         {% endif %}
 
         <span class="current">
@@ -33,9 +37,18 @@
         </span>
 
         {% if visibleItems.has_next %}
-            <a href="{% url 'uatracker:imageList' visibleItems.next_page_number %}">next</a>
+            <a href="{% url 'uatracker:imageList' visibleItems.next_page_number%}?{{ urlrequest.urlencode }}">next</a>
         {% endif %}
     </span>
 	</div>
 </div>
 
+<div id="bufferPanel">
+	<div id="bufferPanelTitle">Buffer Panel</div>
+	<select id="listBox" size=20>
+	    <option class="lbo" value="1">Selection 1</option>
+	    <option class="lbo" value="2" selected="selected">Selection 2</option>
+	    <option class="lbo" value="3">Selection 3</option>
+	</select>
+</div>
+</div>
