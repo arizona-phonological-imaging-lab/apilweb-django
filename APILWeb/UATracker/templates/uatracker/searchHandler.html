@@ -22,6 +22,7 @@
 		<div class="cell tagCell">{{ image.getTagList }}&nbsp;</div>
 		<div class="cell segmentsCell">{{ image.getSegmentSequenceColored |safe }}&nbsp;</div>
 		<div class="cell wordCell">{{ image.word.spelling }}&nbsp;</div>
+		<div style="visibility: hidden;">{{image.id}}</div>		<!-- Just a stupid way to store data -->
     </div>
 {% endfor %}
 
@@ -29,15 +30,17 @@
 	<div class="pagination">
     <span class="step-links">
         {% if visibleItems.has_previous %}
-             <a href="{% url 'uatracker:imageList' visibleItems.previous_page_number %}?{{ urlrequest.urlencode }}">previous</a>
+             <!-- <a href="{% url 'uatracker:imageList' visibleItems.previous_page_number %}?{{ urlrequest.urlencode }}">previous</a> -->
+             <a class="nextPrevButton" id="prevButton" onClick="clickedOnNextOrPrev(-1)">previous</a>
         {% endif %}
 
-        <span class="current">
+        <span id="current">
             Page {{ visibleItems.number }} of {{ visibleItems.paginator.num_pages }}.
         </span>
 
         {% if visibleItems.has_next %}
-            <a href="{% url 'uatracker:imageList' visibleItems.next_page_number%}?{{ urlrequest.urlencode }}">next</a>
+            <!-- <a id="nextButton" href="{% url 'uatracker:imageList' visibleItems.next_page_number%}?{{ urlrequest.urlencode }}">next</a> -->
+            <a class="nextPrevButton" id="nextButton" onClick="clickedOnNextOrPrev(1)">next</a>
         {% endif %}
     </span>
 	</div>
@@ -46,9 +49,16 @@
 <div id="bufferPanel">
 	<div id="bufferPanelTitle">Buffer Panel</div>
 	<select id="listBox" size=20>
-	    <option class="lbo" value="1">Selection 1</option>
-	    <option class="lbo" value="2" selected="selected">Selection 2</option>
+		<!--
+	    <option class="lbo" value="1" selected="selected">Selection 1</option>
+	    <option class="lbo" value="2">Selection 2</option>
 	    <option class="lbo" value="3">Selection 3</option>
+	    -->
 	</select>
+	<div class="buttonContainer">
+		<button type="button" onClick="removeSelected()">Remove</button>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		<button type="button" onClick="clearBuffer()">Clear Buffer</button>
+	</div> 
 </div>
 </div>

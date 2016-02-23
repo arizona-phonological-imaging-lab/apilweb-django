@@ -1,6 +1,7 @@
 var beginID;
 var endID;
 var selecting;
+var bpsc = 1; //Buffer Panel Selection Counter
 $(document).ready(function(event) {
 	
 	$('#imageSearchForm').on('submit', function(event){
@@ -27,9 +28,8 @@ $(document).ready(function(event) {
 function submitSearch() {
 		var serialized = $('#imageSearchForm').serialize();
 		serialized = serialized.replace("tracers=m","tracers=3");
-		console.log(serialized);
     $.ajax({
-        url : "../handle-search/1/", // the endpoint
+        url : "../handle-search/1/",
         type : "GET", // http method
         data : serialized, 
         // handle a successful response
@@ -121,9 +121,6 @@ function activateRowSelection(){
 			e.preventDefault();
 			xx = e.pageX+"px";
 			yy = e.pageY+"px";
-			console.log(xx);
-			console.log(yy);
-			console.log('--------');
 			$("#rightClickMenu").css({top: yy, left: xx});
 			$('#rightClickMenu').css('visibility','visible');
 		} 
@@ -132,6 +129,64 @@ function activateRowSelection(){
 		selecting = false;
 	});
 	$(document).mousedown(function(e) {
-		$('#rightClickMenu').css('visibility','hidden');
+		//If the click is not inside the right click menu:
+		if (!e.target.id == "rightClickMenu" && !$(e.target).parents("#rightClickMenu").size()) { 
+			$('#rightClickMenu').css('visibility','hidden');
+		}
 	});
+}
+
+function clickedOnNextOrPrev(offset){
+	//The offset is either 1 or -1 (next or prev).
+	//It gets really hairy here. I use the html content for page number to retrieve the current page number.
+	//And I use js regex which is not a very user friendly thing anyway. 
+	var currentAddress = document.URL;
+	var myRegex = /[^0-9]*(\d+).*/;
+	var match = myRegex.exec($('#current').html());
+	var currentPage = match[1];
+	console.log(currentPage);
+	var nextPage = String(parseInt(currentPage)+offset);
+	var newAddress = currentAddress.replace(/uat\/\d+/,"uat/"+nextPage);
+	window.history.pushState("object or strin", "Title", newAddress);
+	var callAddress = newAddress.replace("/uat/","/uat/handle-search/");
+	$.ajax({
+        url : callAddress,
+        type : "GET",
+        // handle a successful response
+        success : function(newCode) {
+        	$('.mainTable').remove();
+        	$( ".searchBox" ).after(newCode);
+        },
+
+        // handle a non-successful response
+        error : function(xhr,errmsg,err) {
+            console.log("ERROR: "+errmsg)
+        }
+    });
+    activateRowSelection();
+}
+
+////////////The buffer panel///////////////
+function removeSelected(){
+	$('#listBox').find(":selected").remove();
+}
+function clearBuffer(){
+	$('#listBox').empty();
+}
+function addToBuffer(){
+	var highlightedRows = [];
+	$(".mainTableRow").each(function( index ) {
+		if($(this).data("selected")==true){
+			highlightedRows.push($(this).children().last().html());
+		}
+	});
+	//Now the variable highlightedRows contains the IDs of the selected images.
+	var newListItem = $("<option class='lbo'></option>");
+	newListItem.text("Selection "+bpsc+" ("+highlightedRows.length+")");
+	newListItem.attr("value",bpsc);
+	newListItem.data("ids",highlightedRows);
+	$('#listBox').append(newListItem);
+	bpsc += 1;
+	$('#rightClickMenu').css('visibility','hidden');
+	
 }
