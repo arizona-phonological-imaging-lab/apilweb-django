@@ -11,7 +11,7 @@ $(document).ready(function(event) {
 		window.history.pushState("object or strin", "Title", "/uat/1/?"+serialized);
 		submitSearch();
 	})
-	if (document.location.hostname == "localhost"){
+	if (document.location.hostname != "localhost"){
 		$('#button').hide(0);
 
 	}

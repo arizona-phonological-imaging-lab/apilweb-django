@@ -4,7 +4,14 @@
 <script type="text/javascript" src="{% static 'UATracker/js/general.js' %}" ></script>
 
 
+
+
 <div class ="all"> 
+
+<div id="centerDiv">
+  <button id ="button" type="button" onClick="openImport()">Import</button>
+  
+</div>
 
 <!-- THE SEARCH BOX -->
 <div class="generalBox searchBox">
@@ -55,6 +62,34 @@
 </div>
 
 {{ tableCode |safe }}
+
+<div id="importDialog">
+  <form action="/whatever/">
+      <br><br><br>
+      <div >
+          Project Title: <input autofocus="autofocus" type="text" name="projectTitle"><br>
+      </div><br>
+      Language: <input type="text" name="projectLang"><br><br>
+      Image Sequences:<br>
+
+      <select id="imageSequences" name = "Image Sequences:" size="12" style="width: 200px;">
+          <!-- {% for image in toImportList %}
+              <option>{{image.getName}}</option>
+          {% endfor %} -->
+          <option>Example</option>
+      </select>
+      <img src="" id="preview" width="200" style="display:none;" />
+      <br>
+      <button type="button" onclick="deleteItem()">Delete</button>
+      <input type="file" id="i_file" multiple accept="image/*" ><br> <!-- onchange="addFile()" -->
+        <br>
+        Image Directory: <input type="text" value="/home/trevor/Downloads/" id="path"> <!-- value="/path/to/directory/frames/" -->
+      <div id="disp_tmp_path"></div>
+      <br>
+      <input type="submit" value="Submit">
+  </form>
+      <button type="button" onclick="closeImport()">Close</button>
+</div>
 </div>
 <div id='rightClickMenu'>
 	<div class='rightClickMenuItem' onClick="addToBuffer()">Add to buffer</div>
