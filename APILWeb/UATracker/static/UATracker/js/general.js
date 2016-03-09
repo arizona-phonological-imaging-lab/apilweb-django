@@ -15,6 +15,13 @@ $(document).ready(function(event) {
 		$('#button').hide(0);
 
 	}
+	$('#importDialogForm').on('submit', function(event){
+		event.preventDefault();
+		var serialized = $('#imageSearchForm').serialize();
+		serialized = serialized.replace("tracers=m","tracers=3");
+		window.history.pushState("object or strin", "Title", "/uat/1/?"+serialized);
+		submitImport();
+	})
 
 	$('#i_file').change( function(event) {
 		addFile();
@@ -30,6 +37,26 @@ function submitSearch() {
 		serialized = serialized.replace("tracers=m","tracers=3");
     $.ajax({
         url : "../handle-search/1/",
+        type : "GET", // http method
+        data : serialized, 
+        // handle a successful response
+        success : function(newCode) {
+        	$('.mainTable').remove();
+        	$( ".searchBox" ).after(newCode);
+        },
+
+        // handle a non-successful response
+        error : function(xhr,errmsg,err) {
+            console.log("ERROR: "+errmsg)
+        }
+    });
+};
+
+function submitImport() {
+		var serialized = $('#importDialogForm').serialize();
+		serialized = serialized.replace("tracers=m","tracers=3");
+    $.ajax({
+        url : "../addfiles/",
         type : "GET", // http method
         data : serialized, 
         // handle a successful response

@@ -157,7 +157,7 @@ label{
 }
 
 #importDialog{
-	height: 550px;
+	height: 300px;
 	width: 500px;
 	position: fixed;
 	top: 5;

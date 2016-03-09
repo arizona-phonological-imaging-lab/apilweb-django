@@ -1,11 +1,11 @@
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, redirect
 from UATracker.models import Image
 from UATracker.forms import SearchForm
 import re
 from math import floor
 
-def imageListView(request, page):
+def imageListView(request, page=1):
     form = SearchForm()
     readyMadeTableCode = searchHandlerView(request, page).getvalue()
     return render_to_response('uatracker/imageList.html', {"tableCode": readyMadeTableCode, 'form': form})
@@ -175,3 +175,21 @@ def calculateContext(result, conSize, showOnly):
         lastImage = image
         counter += 1
     return newResult, thickBorders, shaded
+
+
+def addFilesView(request):
+    print(request);
+    if len(request.GET)>0:
+        if len(request.GET['projectTitle'])>0:
+            print("Project Title:", request.GET['projectTitle'])
+        if len(request.GET['projectLang'])>0:
+            print("Project Language:", request.GET['projectLang'])
+        if len(request.GET['filepath'])>0:
+            print("Image Directory:", request.GET['filepath'])
+
+    # add stuff to go to filepath and get the files there and add them to the database
+    
+    return redirect('/uat/successfullyadded/')
+
+def addsuccess(request):
+    return redirect('/uat/1')
