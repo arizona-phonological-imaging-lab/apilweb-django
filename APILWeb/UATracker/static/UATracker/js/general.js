@@ -2,6 +2,8 @@ var beginID;
 var endID;
 var selecting;
 var bpsc = 1; //Buffer Panel Selection Counter
+var imagesToBeManipulated = [];
+var selectingMenus = false;				//I haven't used this variable yet
 $(document).ready(function(event) {
 	
 	$('#imageSearchForm').on('submit', function(event){
@@ -24,7 +26,22 @@ $(document).ready(function(event) {
 		    // $("#disp_tmp_path").html("Temporary Path(Copy it and try pasting it in browser address bar) --> <strong>["+tmppath+"]</strong>");
 	})
 	activateRowSelection();
+	
+	//Set up ajax to accomodate to Django's weird security needs:
+	var csrftoken = getCookie('csrftoken');
+	$.ajaxSetup({
+	    beforeSend: function(xhr, settings) {
+	        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+	            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+	        }
+	    }
+	});
 });
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+
 function submitSearch() {
 		var serialized = $('#imageSearchForm').serialize();
 		serialized = serialized.replace("tracers=m","tracers=3");
@@ -36,6 +53,7 @@ function submitSearch() {
         success : function(newCode) {
         	$('.mainTable').remove();
         	$( ".searchBox" ).after(newCode);
+        	activateRowSelection();
         },
 
         // handle a non-successful response
@@ -45,58 +63,12 @@ function submitSearch() {
     });
 };
 
-function openImport() {
-	console.log("import dialog opened");
-
-	$('#importDialog').css('visibility', 'visible');
-	// $.ajax({
-	// 	url: "http://127.0.0.1:8000/uat/1",
-	// 	type: "GET",
-	// 	data: "",
-	// 	success: function(response) {
-	// 		$('#dialogBox').append(response);
-	// 	} ,
-	// 	error:  function(x, y, z){}
-	// });
-}
-
-function closeImport() {
-	console.log("Import dialog closed");
-	$('#importDialog').css('visibility','hidden');
-}
-
-function deleteItem() {
-	var selection = document.getElementById("imageSequences");
-	console.log( "item " + selection.options[ selection.selectedIndex ].value + " deleted");
-}
-
-function addFile() {
-	console.log("file dialog opened");
-	var newThing = document.getElementById('i_file').value;
-	// $("#preview").fadeIn("fast").attr('src',URL.createObjectURL(event.target.files[0]));
-
-		console.log("newThing grabbed"+newThing)
-		if (newThing) {
-			var startIndex = (newThing.indexOf('\\') >=0 ? newThing.lastIndexOf('\\') : newThing.lastIndexOf('/'));
-			var filename = newThing.substring(startIndex);
-			if (filename.indexOf('\\') === 0 || filename.indexOf('/') === 0) {
-				filename = filename.substring(1);
-			}
-		}
-
-		var str = document.getElementById('path').value;
-		if (str.substr(str.length - 1) != '/'){
-			str = str + '/';
-		}
-		var str = str + filename;
-		$("#disp_tmp_path").html("Complete Path: <strong>"+str+"</strong>");
-}
-
 function activateRowSelection(){
 	$('.mainTableRow').mousedown(function(e) {
 		e.preventDefault();
 		if( e.button == 0){
 			selecting = true;
+
 			beginID = $(this).index();
 			$(this).css({"background-color":"#aaf"});
 			$(this).data("selected",true);
@@ -127,10 +99,11 @@ function activateRowSelection(){
 	});
 	$(document).mouseup(function(e) {
 		selecting = false;
+		$('.dropdownMenu').css('visibility','hidden');
 	});
 	$(document).mousedown(function(e) {
 		//If the click is not inside the right click menu:
-		if (!e.target.id == "rightClickMenu" && !$(e.target).parents("#rightClickMenu").size()) { 
+		if (e.target.id != "rightClickMenu" && !$(e.target).parents("#rightClickMenu").size()) {
 			$('#rightClickMenu').css('visibility','hidden');
 		}
 	});
@@ -144,7 +117,6 @@ function clickedOnNextOrPrev(offset){
 	var myRegex = /[^0-9]*(\d+).*/;
 	var match = myRegex.exec($('#current').html());
 	var currentPage = match[1];
-	console.log(currentPage);
 	var nextPage = String(parseInt(currentPage)+offset);
 	var newAddress = currentAddress.replace(/uat\/\d+/,"uat/"+nextPage);
 	window.history.pushState("object or strin", "Title", newAddress);
@@ -156,6 +128,7 @@ function clickedOnNextOrPrev(offset){
         success : function(newCode) {
         	$('.mainTable').remove();
         	$( ".searchBox" ).after(newCode);
+        	activateRowSelection();
         },
 
         // handle a non-successful response
@@ -163,7 +136,41 @@ function clickedOnNextOrPrev(offset){
             console.log("ERROR: "+errmsg)
         }
     });
-    activateRowSelection();
+    
+}
+function reloadTable(){
+	var currentAddress = document.URL;
+	if (currentAddress.indexOf("theTitle") > -1){
+	//i.e. If no search has been performed so far and the URL does not have GET parameters:
+		currentAddress += "?"+$('#imageSearchForm').serialize();
+	} 
+	var callAddress = currentAddress.replace("/uat/","/uat/handle-search/");
+	$.ajax({
+        url : callAddress,
+        type : "GET",
+        // handle a successful response
+        success : function(newCode) {
+        	$('.mainTable').remove();
+        	$( ".searchBox" ).after(newCode);
+        	activateRowSelection();
+        },
+
+        // handle a non-successful response
+        error : function(xhr,errmsg,err) {
+            console.log("ERROR: "+errmsg)
+        }
+    });
+}
+function clearSelection(){
+	$(".mainTableRow").each(function( index ) {
+		if( $(this).hasClass('shaded')){
+			$(this).css({"background-color":"#efefef"});
+		}
+		else{
+			$(this).css({"background-color":"#fff"});
+		}
+		$(this).data("selected",false);
+	});
 }
 
 ////////////The buffer panel///////////////
@@ -174,6 +181,8 @@ function clearBuffer(){
 	$('#listBox').empty();
 }
 function addToBuffer(){
+	//This is the function called when user clicks on "add to buffer" in the right click menu
+	//I could as well have called it something like "rgtClkMenuAddToBuffer" to stay more consistent
 	var highlightedRows = [];
 	$(".mainTableRow").each(function( index ) {
 		if($(this).data("selected")==true){
@@ -189,4 +198,275 @@ function addToBuffer(){
 	bpsc += 1;
 	$('#rightClickMenu').css('visibility','hidden');
 	
+}
+////////////The Menu///////////////
+function showMenu(menuName){
+	$('.dropdownMenu').css('visibility','hidden');
+	var theMenuBox = $('#'+menuName+'Menu');
+	var theMenuButton = $('#'+menuName+'MenuButton'); 
+	var pos = theMenuButton.position();
+	var top = pos.top+30;
+	var left = pos.left+222; 
+	theMenuBox.css('top',top+"px");
+	theMenuBox.css('left',left+"px");
+	theMenuBox.css('visibility','visible');
+	selectingMenus = true;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+////Trevor's stuff:
+function openImport() {
+	console.log("import dialog opened");
+
+	$('#importDialog').css('visibility', 'visible');
+	// $.ajax({
+	// 	url: "http://127.0.0.1:8000/uat/1",
+	// 	type: "GET",
+	// 	data: "",
+	// 	success: function(response) {
+	// 		$('#dialogBox').append(response);
+	// 	} ,
+	// 	error:  function(x, y, z){}
+	// });
+}
+
+function closeImport() {
+	console.log("Import dialog closed");
+	$('#importDialog').css('visibility','hidden');
+}
+function addFile() {
+	console.log("file dialog opened");
+	var newThing = document.getElementById('i_file').value;
+	// $("#preview").fadeIn("fast").attr('src',URL.createObjectURL(event.target.files[0]));
+
+		console.log("newThing grabbed"+newThing)
+		if (newThing) {
+			var startIndex = (newThing.indexOf('\\') >=0 ? newThing.lastIndexOf('\\') : newThing.lastIndexOf('/'));
+			var filename = newThing.substring(startIndex);
+			if (filename.indexOf('\\') === 0 || filename.indexOf('/') === 0) {
+				filename = filename.substring(1);
+			}
+		}
+
+		var str = document.getElementById('path').value;
+		if (str.substr(str.length - 1) != '/'){
+			str = str + '/';
+		}
+		var str = str + filename;
+		$("#disp_tmp_path").html("Complete Path: <strong>"+str+"</strong>");
+}
+function deleteItem() {
+	var selection = document.getElementById("imageSequences");
+	console.log( "item " + selection.options[ selection.selectedIndex ].value + " deleted");
+}
+
+
+//////////////////////////////
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie != '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+
+
+
+
+
+////////////DB Manipulation///////////////
+function rgtClkMenuTag(){
+	pourHighlightedImagesToTheRightVariable();
+	$('#rightClickMenu').css('visibility','hidden');
+	showTaggingDialog();
+}
+function rgtClkMenuUntag(){
+	pourHighlightedImagesToTheRightVariable();
+	$('#rightClickMenu').css('visibility','hidden');
+	showUntaggingDialog();
+}
+function tagBuffer(){
+	pourBufferImagesInTheRightVariable();
+	showTaggingDialog();
+	
+}
+function untagBuffer(){
+	//The function that's called when the menu item for untagging the images in the buffer panel is clicked
+	pourBufferImagesInTheRightVariable();
+	showUntaggingDialog();	
+}
+function pourBufferImagesInTheRightVariable(){
+	var hash = {};
+	$('#listBox').children().each(function () {
+   		for (var i=0;i<$(this).data('ids').length;i++){
+   			var id = $(this).data('ids')[i];
+   			hash[id]= true;
+   		} 
+	});
+	var imageIDs = Object.keys(hash);
+	imagesToBeManipulated = imageIDs;
+}
+function showTaggingDialog(){
+	$('#fullScreen').css('visibility','visible');
+	$('#taggingDialog').css('visibility','visible');
+}
+
+function showUntaggingDialog(){
+	$('#fullScreen').css('visibility','visible');
+	$('#untaggingDialog').css('visibility','visible');
+}
+function removeDialog(){
+		$('#fullScreen').css('visibility','hidden');
+		$('.dialogBox').css('visibility','hidden');
+}
+function tag(){
+	
+	$.ajax({
+        url : "../tag/",
+        type : "POST", // http method
+        data : {imgs: imagesToBeManipulated, tagContent: $('#tagTF').val()},  
+        // handle a successful response
+        success : function(response) {
+        	alert("Successfully tagged images!");
+        	console.log(response);
+        	reloadTable();
+        },
+
+        // handle a non-successful response
+        error : function(xhr,errmsg,err) {
+        	alert("Something went wrong!");
+            console.log("ERROR: "+errmsg)
+        }
+    });
+    removeDialog();
+}
+function untag(){
+	
+	$.ajax({
+        url : "../untag/",
+        type : "POST", // http method
+        data : {imgs: imagesToBeManipulated, tagContent: $('#untagTF').val()},  
+        // handle a successful response
+        success : function(response) {
+        	alert("Successfully untagged "+response+" images!");
+        	console.log(response);
+        	reloadTable();
+        },
+
+        // handle a non-successful response
+        error : function(xhr,errmsg,err) {
+        	alert("Something went wrong!");
+            console.log("ERROR: "+errmsg)
+        }
+    });
+    removeDialog();
+}
+
+function pourHighlightedImagesToTheRightVariable(){
+	var selectedImages = [];
+	$(".mainTableRow").each(function( index ) {
+		if($(this).data("selected")==true){
+			selectedImages.push($(this).children().last().html());
+		}
+	});
+	//Now the variable selectedImages contains the IDs of the selected images.
+	imagesToBeManipulated = selectedImages;
+}
+
+
+
+
+
+
+////THIS IS STUDPID BUT NOW I HAVE THE SAME FUNCTIONS FOR EXPERIMENTS INSTEAD OF TAGS
+function rgtClkMenuAddExp(){
+	pourHighlightedImagesToTheRightVariable();
+	$('#rightClickMenu').css('visibility','hidden');
+	showAddExpDialog();
+}
+function rgtClkMenuRemoveExp(){
+	pourHighlightedImagesToTheRightVariable();
+	$('#rightClickMenu').css('visibility','hidden');
+	showUntaggingDialog();
+}
+function addExpBuffer(){
+	pourBufferImagesInTheRightVariable();
+	showAddExpDialog();
+	
+}
+function removeExpBuffer(){
+	pourBufferImagesInTheRightVariable();
+	showRemoveExpDialog();	
+}
+function showAddExpDialog(){
+	$('#fullScreen').css('visibility','visible');
+	$('#addExpDialog').css('visibility','visible');
+}
+
+function showRemoveExpDialog(){
+	$('#fullScreen').css('visibility','visible');
+	$('#removeExpDialog').css('visibility','visible');
+}
+function addExp(){
+	
+	$.ajax({
+        url : "../addexp/",
+        type : "POST", // http method
+        data : {imgs: imagesToBeManipulated, expContent: $('#addExpTF').val()},  
+        // handle a successful response
+        success : function(response) {
+        	alert("Successfully added experiment to images!");
+        	console.log(response);
+        	reloadTable();
+        },
+
+        // handle a non-successful response
+        error : function(xhr,errmsg,err) {
+        	alert("Something went wrong!");
+            console.log("ERROR: "+errmsg)
+        }
+    });
+    removeDialog();
+}
+function removeExp(){
+	
+	$.ajax({
+        url : "../removeexp/",
+        type : "POST", // http method
+        data : {imgs: imagesToBeManipulated, expContent: $('#removeExpTF').val()},  
+        // handle a successful response
+        success : function(response) {
+        	alert("Successfully removed experiment from "+response+" images!");
+        	console.log(response);
+        	reloadTable();
+        },
+
+        // handle a non-successful response
+        error : function(xhr,errmsg,err) {
+        	alert("Something went wrong!");
+            console.log("ERROR: "+errmsg)
+        }
+    });
+    removeDialog();
 }

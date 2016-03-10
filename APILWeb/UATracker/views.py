@@ -1,17 +1,82 @@
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render_to_response
-from UATracker.models import Image
+from UATracker.models import Image, Tag, Experiment
 from UATracker.forms import SearchForm
 import re
+from django.http import HttpResponse
 from math import floor
+from django.views.decorators.csrf import ensure_csrf_cookie
+import pdb
 
+@ensure_csrf_cookie
 def imageListView(request, page):
     form = SearchForm()
     readyMadeTableCode = searchHandlerView(request, page).getvalue()
     return render_to_response('uatracker/imageList.html', {"tableCode": readyMadeTableCode, 'form': form})
 
+def tagView(request):
+    imageList = request.POST.getlist('imgs[]')
+    newTag = request.POST.get('tagContent')
+    if(len(imageList)>0):
+        for i in imageList:
+            try:
+#                 pdb.set_trace()
+                t = Tag(image_id=int(i), content=newTag)
+                t.save()
+            except:
+                return HttpResponse("failure:"+sys.exc_info()[0])
+        return HttpResponse("success")
+    else:
+        return HttpResponse("failure")
+
+def untagView(request):
+    imageList = request.POST.getlist('imgs[]')
+    unwantedTag = request.POST.get('tagContent')
+    deletionCounter = 0;
+    if(len(imageList)>0):
+        for i in imageList:
+            try:
+                t = Tag.objects.get(image_id=int(i), content=unwantedTag)
+                t.delete()
+                deletionCounter += 1
+            except:
+                pass
+        return HttpResponse(str(deletionCounter))
+    else:
+        return HttpResponse("failure")
+
+def addexpView(request):
+    imageList = request.POST.getlist('imgs[]')
+    newTag = request.POST.get('expContent')
+    if(len(imageList)>0):
+        for i in imageList:
+            try:
+#                 pdb.set_trace()
+                t = Experiment(image_id=int(i), content=newTag)
+                t.save()
+            except:
+                return HttpResponse("failure:"+sys.exc_info()[0])
+        return HttpResponse("success")
+    else:
+        return HttpResponse("failure")
+
+def removeexpView(request):
+    imageList = request.POST.getlist('imgs[]')
+    unwantedTag = request.POST.get('expContent')
+    deletionCounter = 0;
+    if(len(imageList)>0):
+        for i in imageList:
+            try:
+                t = Experiment.objects.get(image_id=int(i), content=unwantedTag)
+                t.delete()
+                deletionCounter += 1
+            except:
+                pass
+        return HttpResponse(str(deletionCounter))
+    else:
+        return HttpResponse("failure")
+
 def searchHandlerView(request, page):
-#     import pdb
 #     pdb.set_trace()
     result = Image.objects.all()
     if len(request.GET)>0:

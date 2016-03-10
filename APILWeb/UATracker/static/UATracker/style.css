@@ -106,6 +106,9 @@ body{
 	text-decoration: underline;
 	padding: 0px 3px 0px 3px;
 }
+#clearSelectionButton{
+	float: left;
+}
 
 
 /*THE BUFFER PANEL*/
@@ -126,13 +129,13 @@ body{
 }
 #bufferPanel{
 	position: absolute;
-	top: 169px;
+	top: 194px;
 	left: 765px;
 	background-color: lightblue;
 	padding: 0px 0px 5px 0px;
 	width: 190px;
 	border: 2px solid lightblue;
-	height: 455px;
+	height: 461px;
 }
 #listBox{
 	width: 170px;
@@ -154,4 +157,92 @@ label{
 .searchBoxRow{
 	height: 20px;
 	margin-bottom: 9px;
+}
+
+
+/* Dialog Boxes */
+#fullScreen{
+	height: 100%;
+	width: 100%;
+	background-color: black;
+	opacity: 0.6;
+	float: left;
+	z-index: 3;
+	position: fixed;
+	top: 0;
+	left: 0;
+	visibility: hidden;
+}
+.dialogBox{
+	position: fixed;
+	right: 0;
+	left: 0;
+	bottom: 300;
+	visibility: hidden;
+	width: 500px;
+	height: 120px;
+	z-index: 4;
+	margin: auto;
+	top: 1px;
+	background-color: white;
+	border: 1px solid grey;
+}
+.dialogBoxHeader{
+	color: white;
+	font-weight: bold;
+	padding: 3px;
+	background-color: #59b;
+}
+.dialogBoxText{
+	margin-top: 5px;
+	margin-bottom: 5px;
+	font-size: 14px;
+}
+.dialogBoxBody{
+	margin: 8px;
+}
+
+
+/* The Menu Bar */
+.menuBar{
+	margin-bottom: 3px;
+	height: 23px;
+	background-color: white;
+}
+.menuButton{
+	float: left;
+	min-width: 70px;
+	border: 1px #eee solid;
+	background-color: white;
+	padding-left: 7px;
+	padding-right: 7px;
+	text-align: center;
+	margin-left: 1px;
+}
+.menuButton:hover{
+	background-color: #aaa;
+	cursor: default;
+}
+.dropdownMenu{
+	visibility: hidden;
+	background-color: #fff;
+	border: 1px #eee solid;
+	padding-top: 4px;
+	padding-bottom: 4px;
+	min-height: 50px;
+	min-width: 190px;
+	box-shadow: 2px 2px 2px #ccc;
+	visibility: hidden;
+	z-index: 2;
+	position: absolute;
+	top: 30px;
+	left: 100px;
+}
+.dropdownMenuItem{
+	padding-left: 10px;
+	padding-right: 18px;
+	cursor: default;
+}
+.dropdownMenuItem:hover{
+	background-color: #aaa;
 }

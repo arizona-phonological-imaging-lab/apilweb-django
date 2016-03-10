@@ -6,6 +6,16 @@
 
 <div class ="all"> 
 
+<!-- THE MENU BAR -->
+<div class="generalBox menuBar">
+	<div class='menuButton' id='downloadMenuButton' onClick="showMenu('download')">Download</div>
+	<div class='menuButton' id='tagsMenuButton' onClick="showMenu('tags')">Tags</div>
+	<div class='menuButton' id='dataMenuButton' onClick="showMenu('data')">Data</div>	
+	<div class='menuButton' id='viewMenuButton' onClick="showMenu('view')">View</div>
+</div>
+
+
+
 <!-- THE SEARCH BOX -->
 <div class="generalBox searchBox">
 	<form action="/whatever/" method="post" id="imageSearchForm">
@@ -55,11 +65,93 @@
 </div>
 
 {{ tableCode |safe }}
+<div id="bufferPanel">
+	<div id="bufferPanelTitle">Buffer Panel</div>
+	<select id="listBox" size=20>
+		<!--
+	    <option class="lbo" value="1" selected="selected">Selection 1</option>
+	    <option class="lbo" value="2">Selection 2</option>
+	    <option class="lbo" value="3">Selection 3</option>
+	    -->
+	</select>
+	<div class="buttonContainer">
+		<button type="button" onClick="removeSelected()">Remove</button>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		<button type="button" onClick="clearBuffer()">Clear Buffer</button>
+	</div> 
 </div>
+</div>
+
+
+
+
+<!-- These are invisible boxes that are only displayed when needed: -->
 <div id='rightClickMenu'>
 	<div class='rightClickMenuItem' onClick="addToBuffer()">Add to buffer</div>
-	<div class='rightClickMenuItem'>Tag...</div>
-	<div class='rightClickMenuItem'>Untag...</div>
-	<div class='rightClickMenuItem'>Add experiment...</div>
-	<div class='rightClickMenuItem'>Remove experiment...</div>
+	<div class='rightClickMenuItem' onClick="rgtClkMenuTag()">Tag...</div>
+	<div class='rightClickMenuItem' onClick="rgtClkMenuUntag()">Untag...</div>
+	<div class='rightClickMenuItem' onClick="rgtClkMenuAddExp()">Add experiment...</div>
+	<div class='rightClickMenuItem' onClick="rgtClkMenuRemoveExp()">Remove experiment...</div>
+</div>
+
+<div id='taggingDialog' class='dialogBox'>
+	<div class='dialogBoxHeader'>Tag images...</div>
+	<div class='dialogBoxBody'>
+		<div class='dialogBoxText'>Insert the name of the tag you want to add to the images:</div>
+		<input type="text" name="tagTextfield" id="tagTF">
+		<br>
+		<button type="button" onClick="tag()">Submit</button>
+		<button type="button" onClick="removeDialog()">Cancel</button>
+	</div>
+</div>
+<div id='untaggingDialog' class='dialogBox'>
+	<div class='dialogBoxHeader'>Untag images...</div>
+	<div class='dialogBoxBody'>
+		<div class='dialogBoxText'>Insert the name of the tag you want to remove from the images:</div>
+		<input type="text" name="tagTextfield" id="untagTF">
+		<br>
+		<button type="button" onClick="untag()">Submit</button>
+		<button type="button" onClick="removeDialog()">Cancel</button>
+	</div>
+</div>
+<div id='removeExpDialog' class='dialogBox'>
+	<div class='dialogBoxHeader'>Remove experiments...</div>
+	<div class='dialogBoxBody'>
+		<div class='dialogBoxText'>Insert the name of the experiment you want to remove from the images:</div>
+		<input type="text" name="tagTextfield" id="removeExpTF">
+		<br>
+		<button type="button" onClick="removeExp()">Submit</button>
+		<button type="button" onClick="removeDialog()">Cancel</button>
+	</div>
+</div>
+<div id='addExpDialog' class='dialogBox'>
+	<div class='dialogBoxHeader'>Add experiments...</div>
+	<div class='dialogBoxBody'>
+		<div class='dialogBoxText'>Insert the name of the experiment you want to add to the images:</div>
+		<input type="text" name="tagTextfield" id="addExpTF">
+		<br>
+		<button type="button" onClick="addExp()">Submit</button>
+		<button type="button" onClick="removeDialog()">Cancel</button>
+	</div>
+</div>
+<div id='fullScreen'></div>
+<div class='dropdownMenu' id='downloadMenu'>
+	<div class='dropdownMenuItem'>Download buffer images</div>
+	<div class='dropdownMenuItem'>Download buffer images with traces</div>
+</div>
+<div class='dropdownMenu' id='tagsMenu'>
+	<div class='dropdownMenuItem' onClick='tagBuffer()'>Tag buffer images</div>
+	<div class='dropdownMenuItem' onClick='untagBuffer()'>Untag buffer images</div>
+	<div class='dropdownMenuItem'>Add experiment to buffer images</div>
+	<div class='dropdownMenuItem'>Remove experiment from buffer images</div>
+</div>
+<div class='dropdownMenu' id='dataMenu'>
+	<div class='dropdownMenuItem'>Add standard project</div>
+	<div class='dropdownMenuItem'>Add custom project</div>
+	<div class='dropdownMenuItem'>Update standard project</div>
+	<div class='dropdownMenuItem'>Remove project</div>
+</div>
+<div class='dropdownMenu' id='viewMenu'>
+	<div class='dropdownMenuItem'>Option 1</div>
+	<div class='dropdownMenuItem'>Option 2</div>
 </div>

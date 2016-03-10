@@ -26,6 +26,7 @@
     </div>
 {% endfor %}
 
+	<button type="button" id="clearSelectionButton" onClick="clearSelection()">Clear Selection</button>
 	<!-- Pagination -->
 	<div class="pagination">
     <span class="step-links">
@@ -44,21 +45,5 @@
         {% endif %}
     </span>
 	</div>
-</div>
-
-<div id="bufferPanel">
-	<div id="bufferPanelTitle">Buffer Panel</div>
-	<select id="listBox" size=20>
-		<!--
-	    <option class="lbo" value="1" selected="selected">Selection 1</option>
-	    <option class="lbo" value="2">Selection 2</option>
-	    <option class="lbo" value="3">Selection 3</option>
-	    -->
-	</select>
-	<div class="buttonContainer">
-		<button type="button" onClick="removeSelected()">Remove</button>
-		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-		<button type="button" onClick="clearBuffer()">Clear Buffer</button>
-	</div> 
 </div>
 </div>
