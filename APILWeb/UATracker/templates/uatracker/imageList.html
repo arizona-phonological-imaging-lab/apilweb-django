@@ -61,6 +61,7 @@
     	</tr>
     	</Table>
     <input type="submit" value="Submit" />
+    <button type="button" onClick="addSearchResultsToBP" id="SRBP_button">Add results to Buffer Panel</button>
 </form>
 </div>
 
@@ -100,8 +101,8 @@
 		<div class='dialogBoxText'>Insert the name of the tag you want to add to the images:</div>
 		<input type="text" name="tagTextfield" id="tagTF">
 		<br>
-		<button type="button" onClick="tag()">Submit</button>
-		<button type="button" onClick="removeDialog()">Cancel</button>
+		<button type="button" onClick="tag()" id="tagButton">Submit</button>
+		<button type="button" onClick="removeDialog()" id="cancel1">Cancel</button>
 	</div>
 </div>
 <div id='untaggingDialog' class='dialogBox'>
@@ -110,8 +111,8 @@
 		<div class='dialogBoxText'>Insert the name of the tag you want to remove from the images:</div>
 		<input type="text" name="tagTextfield" id="untagTF">
 		<br>
-		<button type="button" onClick="untag()">Submit</button>
-		<button type="button" onClick="removeDialog()">Cancel</button>
+		<button type="button" onClick="untag()" id="untagButton">Submit</button>
+		<button type="button" onClick="removeDialog()" id="cancel2">Cancel</button>
 	</div>
 </div>
 <div id='removeExpDialog' class='dialogBox'>
@@ -120,8 +121,8 @@
 		<div class='dialogBoxText'>Insert the name of the experiment you want to remove from the images:</div>
 		<input type="text" name="tagTextfield" id="removeExpTF">
 		<br>
-		<button type="button" onClick="removeExp()">Submit</button>
-		<button type="button" onClick="removeDialog()">Cancel</button>
+		<button type="button" onClick="removeExp()" id="removeExpButton">Submit</button>
+		<button type="button" onClick="removeDialog()" id="cancel3">Cancel</button>
 	</div>
 </div>
 <div id='addExpDialog' class='dialogBox'>
@@ -130,8 +131,8 @@
 		<div class='dialogBoxText'>Insert the name of the experiment you want to add to the images:</div>
 		<input type="text" name="tagTextfield" id="addExpTF">
 		<br>
-		<button type="button" onClick="addExp()">Submit</button>
-		<button type="button" onClick="removeDialog()">Cancel</button>
+		<button type="button" onClick="addExp()" id="addExpButton">Submit</button>
+		<button type="button" onClick="removeDialog()" id="cancel4">Cancel</button>
 	</div>
 </div>
 <div id='fullScreen'></div>
@@ -142,8 +143,8 @@
 <div class='dropdownMenu' id='tagsMenu'>
 	<div class='dropdownMenuItem' onClick='tagBuffer()'>Tag buffer images</div>
 	<div class='dropdownMenuItem' onClick='untagBuffer()'>Untag buffer images</div>
-	<div class='dropdownMenuItem'>Add experiment to buffer images</div>
-	<div class='dropdownMenuItem'>Remove experiment from buffer images</div>
+	<div class='dropdownMenuItem' onClick='addExpBuffer()'>Add experiment to buffer images</div>
+	<div class='dropdownMenuItem' onClick='removeExpBuffer()'>Remove experiment from buffer images</div>
 </div>
 <div class='dropdownMenu' id='dataMenu'>
 	<div class='dropdownMenuItem'>Add standard project</div>

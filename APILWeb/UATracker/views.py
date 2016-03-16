@@ -33,12 +33,14 @@ def untagView(request):
     imageList = request.POST.getlist('imgs[]')
     unwantedTag = request.POST.get('tagContent')
     deletionCounter = 0;
+#     pdb.set_trace()
     if(len(imageList)>0):
         for i in imageList:
             try:
-                t = Tag.objects.get(image_id=int(i), content=unwantedTag)
-                t.delete()
-                deletionCounter += 1
+                ts = Tag.objects.filter(image_id=int(i), content=unwantedTag)
+                for t in ts: 
+                    t.delete()
+                    deletionCounter += 1
             except:
                 pass
         return HttpResponse(str(deletionCounter))
@@ -67,9 +69,10 @@ def removeexpView(request):
     if(len(imageList)>0):
         for i in imageList:
             try:
-                t = Experiment.objects.get(image_id=int(i), content=unwantedTag)
-                t.delete()
-                deletionCounter += 1
+                ts = Experiment.objects.filter(image_id=int(i), content=unwantedTag)
+                for t in ts: 
+                    t.delete()
+                    deletionCounter += 1
             except:
                 pass
         return HttpResponse(str(deletionCounter))

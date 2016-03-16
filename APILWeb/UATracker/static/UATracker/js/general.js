@@ -3,7 +3,8 @@ var endID;
 var selecting;
 var bpsc = 1; //Buffer Panel Selection Counter
 var imagesToBeManipulated = [];
-var selectingMenus = false;				//I haven't used this variable yet
+
+
 $(document).ready(function(event) {
 	
 	$('#imageSearchForm').on('submit', function(event){
@@ -26,7 +27,6 @@ $(document).ready(function(event) {
 		    // $("#disp_tmp_path").html("Temporary Path(Copy it and try pasting it in browser address bar) --> <strong>["+tmppath+"]</strong>");
 	})
 	activateRowSelection();
-	
 	//Set up ajax to accomodate to Django's weird security needs:
 	var csrftoken = getCookie('csrftoken');
 	$.ajaxSetup({
@@ -36,6 +36,7 @@ $(document).ready(function(event) {
 	        }
 	    }
 	});
+	prepareDialogBoxes();
 });
 function csrfSafeMethod(method) {
     // these HTTP methods do not require CSRF protection
@@ -173,7 +174,75 @@ function clearSelection(){
 	});
 }
 
+function prepareDialogBoxes(){
+	$('#tagTF').keypress(function(event){
+	    if(event.keyCode == 13){
+	    	event.preventDefault();
+	        $("#tagButton").click();
+	    }
+	    else if(event.keyCode == 27){
+	    	event.preventDefault();
+	        $("#cancel1").click();
+	    }
+	});
+	$('#untagTF').keypress(function(event){
+	    if(event.keyCode == 13){
+	    	event.preventDefault();
+	        $("#untagButton").click();
+	    }
+	    else if(event.keyCode == 27){
+	    	event.preventDefault();
+	        $("#cancel2").click();
+	    }
+	});
+	$('#addExpTF').keypress(function(event){
+	    if(event.keyCode == 13){
+	    	event.preventDefault();
+	        $("#addExpButton").click();
+	    }
+	    else if(event.keyCode == 27){
+	    	event.preventDefault();
+	        $("#cancel4").click();
+	    }
+	});
+	$('#removeExpTF').keypress(function(event){
+	    if(event.keyCode == 13){
+	    	event.preventDefault();
+	        $("#removeExpButton").click();
+	    }
+	    else if(event.keyCode == 27){
+	    	event.preventDefault();
+	        $("#cancel3").click();
+	    }
+	});
+}
+
 ////////////The buffer panel///////////////
+function addSearchResultsToBP(){
+	console.log("in func");
+	var currentURL = documetn.URL;
+	var theData = currentURL.replace(/.*\?/,"?");	//Because the query part starts with a "?"
+	$.ajax({
+        url : "../get-all-ids/1/",
+        type : "GET", // http method
+        data : theData, 
+        // handle a successful response
+        success : function(ids) {
+        	var newListItem = $("<option class='lbo'></option>");
+			newListItem.text("Selection "+bpsc+" ("+ids.length+")");
+			newListItem.attr("value",bpsc);
+			newListItem.data("ids",ids);
+			$('#listBox').append(newListItem);
+			bpsc += 1;
+        },
+
+        // handle a non-successful response
+        error : function(xhr,errmsg,err) {
+            console.log("ERROR: "+errmsg)
+            alert("Something went wrong!");
+        }
+    });
+}
 function removeSelected(){
 	$('#listBox').find(":selected").remove();
 }
@@ -197,8 +266,12 @@ function addToBuffer(){
 	$('#listBox').append(newListItem);
 	bpsc += 1;
 	$('#rightClickMenu').css('visibility','hidden');
+}
+function addSearchResultsToBP(){
 	
 }
+
+
 ////////////The Menu///////////////
 function showMenu(menuName){
 	$('.dropdownMenu').css('visibility','hidden');
@@ -206,11 +279,10 @@ function showMenu(menuName){
 	var theMenuButton = $('#'+menuName+'MenuButton'); 
 	var pos = theMenuButton.position();
 	var top = pos.top+30;
-	var left = pos.left+222; 
+	var left = pos.left+241; 
 	theMenuBox.css('top',top+"px");
 	theMenuBox.css('left',left+"px");
 	theMenuBox.css('visibility','visible');
-	selectingMenus = true;
 }
 
 
@@ -330,11 +402,13 @@ function pourBufferImagesInTheRightVariable(){
 function showTaggingDialog(){
 	$('#fullScreen').css('visibility','visible');
 	$('#taggingDialog').css('visibility','visible');
+	$('#tagTF').focus();
 }
 
 function showUntaggingDialog(){
 	$('#fullScreen').css('visibility','visible');
 	$('#untaggingDialog').css('visibility','visible');
+	$('#untagTF').focus();
 }
 function removeDialog(){
 		$('#fullScreen').css('visibility','hidden');
@@ -369,7 +443,7 @@ function untag(){
         data : {imgs: imagesToBeManipulated, tagContent: $('#untagTF').val()},  
         // handle a successful response
         success : function(response) {
-        	alert("Successfully untagged "+response+" images!");
+        	alert("Successfully removed "+response+" tags!");
         	console.log(response);
         	reloadTable();
         },
@@ -394,11 +468,6 @@ function pourHighlightedImagesToTheRightVariable(){
 	imagesToBeManipulated = selectedImages;
 }
 
-
-
-
-
-
 ////THIS IS STUDPID BUT NOW I HAVE THE SAME FUNCTIONS FOR EXPERIMENTS INSTEAD OF TAGS
 function rgtClkMenuAddExp(){
 	pourHighlightedImagesToTheRightVariable();
@@ -408,7 +477,7 @@ function rgtClkMenuAddExp(){
 function rgtClkMenuRemoveExp(){
 	pourHighlightedImagesToTheRightVariable();
 	$('#rightClickMenu').css('visibility','hidden');
-	showUntaggingDialog();
+	showRemoveExpDialog();
 }
 function addExpBuffer(){
 	pourBufferImagesInTheRightVariable();
@@ -422,11 +491,13 @@ function removeExpBuffer(){
 function showAddExpDialog(){
 	$('#fullScreen').css('visibility','visible');
 	$('#addExpDialog').css('visibility','visible');
+	$('#addExpTF').focus();
 }
 
 function showRemoveExpDialog(){
 	$('#fullScreen').css('visibility','visible');
 	$('#removeExpDialog').css('visibility','visible');
+	$('#removeExpTF').focus();
 }
 function addExp(){
 	
@@ -457,7 +528,7 @@ function removeExp(){
         data : {imgs: imagesToBeManipulated, expContent: $('#removeExpTF').val()},  
         // handle a successful response
         success : function(response) {
-        	alert("Successfully removed experiment from "+response+" images!");
+        	alert("Successfully removed "+response+" experiment tags!");
         	console.log(response);
         	reloadTable();
         },
