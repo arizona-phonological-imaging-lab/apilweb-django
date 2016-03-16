@@ -3,7 +3,8 @@ var endID;
 var selecting;
 var bpsc = 1; //Buffer Panel Selection Counter
 var imagesToBeManipulated = [];
-var selectingMenus = false;				//I haven't used this variable yet
+
+
 $(document).ready(function(event) {
 	
 	$('#imageSearchForm').on('submit', function(event){
@@ -217,6 +218,31 @@ function prepareDialogBoxes(){
 }
 
 ////////////The buffer panel///////////////
+function addSearchResultsToBP(){
+	console.log("in func");
+	var currentURL = documetn.URL;
+	var theData = currentURL.replace(/.*\?/,"?");	//Because the query part starts with a "?"
+	$.ajax({
+        url : "../get-all-ids/1/",
+        type : "GET", // http method
+        data : theData, 
+        // handle a successful response
+        success : function(ids) {
+        	var newListItem = $("<option class='lbo'></option>");
+			newListItem.text("Selection "+bpsc+" ("+ids.length+")");
+			newListItem.attr("value",bpsc);
+			newListItem.data("ids",ids);
+			$('#listBox').append(newListItem);
+			bpsc += 1;
+        },
+
+        // handle a non-successful response
+        error : function(xhr,errmsg,err) {
+            console.log("ERROR: "+errmsg)
+            alert("Something went wrong!");
+        }
+    });
+}
 function removeSelected(){
 	$('#listBox').find(":selected").remove();
 }
@@ -240,8 +266,12 @@ function addToBuffer(){
 	$('#listBox').append(newListItem);
 	bpsc += 1;
 	$('#rightClickMenu').css('visibility','hidden');
+}
+function addSearchResultsToBP(){
 	
 }
+
+
 ////////////The Menu///////////////
 function showMenu(menuName){
 	$('.dropdownMenu').css('visibility','hidden');
@@ -253,7 +283,6 @@ function showMenu(menuName){
 	theMenuBox.css('top',top+"px");
 	theMenuBox.css('left',left+"px");
 	theMenuBox.css('visibility','visible');
-	selectingMenus = true;
 }
 
 
