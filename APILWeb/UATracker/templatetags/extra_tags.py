@@ -7,10 +7,10 @@ def printAppropriateRowOpeningTag(context, value):
     pageThickBorders = context['pageThickBorders']
     pageShaded = context['pageShaded']
     if value in pageThickBorders and value in pageShaded:
-        return "<div class='mainTableRow thickBottom shaded'>"
+        return u"<div class='mainTableRow thickBottom shaded'>"
     elif value in pageThickBorders and value not in pageShaded:
-        return "<div class='mainTableRow thickBottom'>"
+        return u"<div class='mainTableRow thickBottom'>"
     elif value not in pageThickBorders and value in pageShaded:
-        return "<div class='mainTableRow shaded'>"
+        return u"<div class='mainTableRow shaded'>"
     else:
-        return "<div class='mainTableRow'>"
+        return u"<div class='mainTableRow'>"
