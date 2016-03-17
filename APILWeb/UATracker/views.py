@@ -7,12 +7,24 @@ from django.http import HttpResponse
 from math import floor
 from django.views.decorators.csrf import ensure_csrf_cookie
 import pdb
+import json
 
 @ensure_csrf_cookie
 def imageListView(request, page):
     form = SearchForm()
     readyMadeTableCode = searchHandlerView(request, page).getvalue()
     return render_to_response('uatracker/imageList.html', {"tableCode": readyMadeTableCode, 'form': form})
+
+def getAllIDsView(request):
+    result = getResults(request)
+    result = result[0]
+#     pdb.set_trace()
+    ids = []
+    for image in result:
+        ids.append(image.id)
+    print("length: "+str(len(ids)))
+    dumped = json.dumps(ids) 
+    return HttpResponse(dumped)
 
 def tagView(request):
     imageList = request.POST.getlist('imgs[]')
@@ -80,7 +92,21 @@ def removeexpView(request):
         return HttpResponse("failure")
 
 def searchHandlerView(request, page):
-#     pdb.set_trace()
+    result, thickBorders, shaded = getResults(request)
+    paginator = Paginator(result, 20)
+    visibleItems = paginator.page(page)
+    #Recalculate thickBorders and shaded based on page number
+    pageThickBorders = {}
+    pageShaded = {}
+    for i in range(1,21):
+        overallIndex = (int(page)-1)*20 + (i-1)
+        if overallIndex in thickBorders:
+            pageThickBorders[i] = 1
+        if overallIndex in shaded:
+            pageShaded[i] = 1
+    return render_to_response('uatracker/searchHandler.html', {"visibleItems": visibleItems, "urlrequest":request.GET.copy(), "pageThickBorders": pageThickBorders, "pageShaded": pageShaded})
+
+def getResults(request):
     result = Image.objects.all()
     if len(request.GET)>0:
         if len(request.GET['theTitle'])>0:
@@ -125,18 +151,7 @@ def searchHandlerView(request, page):
         else:
             conSize = 0
         result, thickBorders, shaded = calculateContext(result,conSize,request.GET['show_only'])
-    paginator = Paginator(result, 20)
-    visibleItems = paginator.page(page)
-    #Recalculate thickBorders and shaded based on page number
-    pageThickBorders = {}
-    pageShaded = {}
-    for i in range(1,21):
-        overallIndex = (int(page)-1)*20 + (i-1)
-        if overallIndex in thickBorders:
-            pageThickBorders[i] = 1
-        if overallIndex in shaded:
-            pageShaded[i] = 1
-    return render_to_response('uatracker/searchHandler.html', {"visibleItems": visibleItems, "urlrequest":request.GET.copy(), "pageThickBorders": pageThickBorders, "pageShaded": pageShaded})
+    return result, thickBorders, shaded
 
 def getTargetSegment(inputt):
     inputt = inputt.strip()

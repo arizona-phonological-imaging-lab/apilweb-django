@@ -219,17 +219,16 @@ function prepareDialogBoxes(){
 
 ////////////The buffer panel///////////////
 function addSearchResultsToBP(){
-	console.log("in func");
-	var currentURL = documetn.URL;
-	var theData = currentURL.replace(/.*\?/,"?");	//Because the query part starts with a "?"
+	var currentURL = document.URL;
+	var theData = currentURL.replace(/.*\?/,"");	//Because the query part starts with a "?"
 	$.ajax({
-        url : "../get-all-ids/1/",
+        url : "../get-all-ids/",
         type : "GET", // http method
         data : theData, 
         // handle a successful response
         success : function(ids) {
         	var newListItem = $("<option class='lbo'></option>");
-			newListItem.text("Selection "+bpsc+" ("+ids.length+")");
+			newListItem.text("Selection "+bpsc+" ("+JSON.parse(ids).length+")");
 			newListItem.attr("value",bpsc);
 			newListItem.data("ids",ids);
 			$('#listBox').append(newListItem);
@@ -266,9 +265,6 @@ function addToBuffer(){
 	$('#listBox').append(newListItem);
 	bpsc += 1;
 	$('#rightClickMenu').css('visibility','hidden');
-}
-function addSearchResultsToBP(){
-	
 }
 
 
