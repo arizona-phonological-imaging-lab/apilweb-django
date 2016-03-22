@@ -27,7 +27,7 @@ $(document).ready(function(event) {
 		    // $("#disp_tmp_path").html("Temporary Path(Copy it and try pasting it in browser address bar) --> <strong>["+tmppath+"]</strong>");
 	})
 	activateRowSelection();
-	//Set up ajax to accomodate to Django's weird security needs:
+	//Set up ajax to accomodate to Django's security demands:
 	var csrftoken = getCookie('csrftoken');
 	$.ajaxSetup({
 	    beforeSend: function(xhr, settings) {
@@ -266,7 +266,16 @@ function addToBuffer(){
 	bpsc += 1;
 	$('#rightClickMenu').css('visibility','hidden');
 }
-
+function downloadBufferImages(isWithTrace){
+	pourBufferImagesInTheRightVariable();
+	$('#theHiddenField').val(imagesToBeManipulated);
+	showDownloadDialog();
+	//TODO
+}
+function showDownloadDialog(){
+	$('#fullScreen').css('visibility','visible');
+	$('#downloadDialog').css('visibility','visible');
+}
 
 ////////////The Menu///////////////
 function showMenu(menuName){

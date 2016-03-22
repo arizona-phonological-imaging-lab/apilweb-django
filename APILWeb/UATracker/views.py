@@ -8,13 +8,32 @@ from math import floor
 from django.views.decorators.csrf import ensure_csrf_cookie
 import pdb
 import json
+import zipfile
+from django.template import RequestContext
 
 @ensure_csrf_cookie
 def imageListView(request, page):
     form = SearchForm()
     readyMadeTableCode = searchHandlerView(request, page).getvalue()
-    return render_to_response('uatracker/imageList.html', {"tableCode": readyMadeTableCode, 'form': form})
+    return render_to_response('uatracker/imageList.html', {"tableCode": readyMadeTableCode, 'form': form},context_instance=RequestContext(request))
 
+@ensure_csrf_cookie
+def downloadView(request):
+    imageList = request.POST.get('ids')
+    isWithTrace = request.POST.get('withTrace')
+    zf = zipfile.ZipFile("myzipfile.zip", "w")
+    pdb.set_trace()
+    for id in imageList:
+        theImage = Image.objects.get(pk=id)
+        theAddress = theImage.address
+        print(theAddress)
+        zf.write(theAddress)
+    zf.close()
+    response = HttpResponse(zf, content_type='application/zip', )
+    response['Content-Disposition'] = 'attachment; filename=images.zip'
+    response['context_instance'] = RequestContext(request)
+    return response
+    
 def getAllIDsView(request):
     result = getResults(request)
     result = result[0]

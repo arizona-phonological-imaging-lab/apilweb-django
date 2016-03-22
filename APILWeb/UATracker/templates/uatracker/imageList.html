@@ -134,9 +134,23 @@
 		<button type="button" onClick="removeDialog()" id="cancel4">Cancel</button>
 	</div>
 </div>
+<div id='downloadDialog' class='dialogBox'>
+	<div class='dialogBoxHeader'>Download images...</div>
+	<div class='dialogBoxBody'>
+		<div class='dialogBoxText'>The images in the buffer panel are ready for download:</div>
+		<br>
+		<form method="post" action="../download/">
+			{% csrf_token %}
+			<input type="hidden" name="ids" id="theHiddenField" value="nothingYet"></input>
+			<input type="submit" value="Download" />
+			<button type="button" onClick="removeDialog()" id="cancel5">Cancel</button>
+		</form>
+	</div>
+</div>
+
 <div id='fullScreen'></div>
 <div class='dropdownMenu' id='downloadMenu'>
-	<div class='dropdownMenuItem'>Download buffer images</div>
+	<div class='dropdownMenuItem' onClick="downloadBufferImages('false')">Download buffer images</div>
 	<div class='dropdownMenuItem'>Download buffer images with traces</div>
 </div>
 <div class='dropdownMenu' id='tagsMenu'>
