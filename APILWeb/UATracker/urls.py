@@ -10,4 +10,6 @@ urlpatterns = [
     url(r'^addexp/$', views.addexpView, name='addexp'),
     url(r'^removeexp/$', views.removeexpView, name='removeexp'),
     url(r'^handle-search/(?P<page>[0-9]+)/$', views.searchHandlerView, name='searchHandler'),
+    url(r'^addfiles/$', views.addFilesView, name='addFiles'),
+    url(r'^successfullyadded/$', views.addsuccess, name='addFiles'),
 ]

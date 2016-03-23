@@ -14,10 +14,15 @@ $(document).ready(function(event) {
 		window.history.pushState("object or strin", "Title", "/uat/1/?"+serialized);
 		submitSearch();
 	})
-	if (document.location.hostname == "localhost"){
-		$('#button').hide(0);
 
-	}
+	$('#importDialogForm').on('submit', function(event){
+		event.preventDefault();
+		var serialized = $('#imageSearchForm').serialize();
+		serialized = serialized.replace("tracers=m","tracers=3");
+		window.history.pushState("object or strin", "Title", "/uat/1/?"+serialized);
+		submitImport();
+	})
+
 
 	$('#i_file').change( function(event) {
 		addFile();
@@ -305,9 +310,15 @@ function showMenu(menuName){
 
 ////Trevor's stuff:
 function openImport() {
-	console.log("import dialog opened");
+	if (document.location.hostname != "localhost"){
+		alert("You do not have access to this function. This incident will be reported.")
+	}
+	else{
+		console.log("import dialog opened");
 
-	$('#importDialog').css('visibility', 'visible');
+		$('#importDialog').css('visibility', 'visible');
+	}
+	
 	// $.ajax({
 	// 	url: "http://127.0.0.1:8000/uat/1",
 	// 	type: "GET",
@@ -349,6 +360,31 @@ function deleteItem() {
 	console.log( "item " + selection.options[ selection.selectedIndex ].value + " deleted");
 }
 
+function submitImport() {
+	var serialized = $('#importDialogForm').serialize();
+	serialized = serialized.replace("tracers=m","tracers=3");
+    
+
+    $.ajax({
+        url : "../addfiles/",
+        type : "GET", // http method
+        data : serialized, 
+        // handle a successful response
+        success : function(newCode) {
+        	console.log("successfully read")
+        	alert("Success!")
+        	
+        	$( "#importDialog" ).css('visibility','hidden');
+        },
+
+        // handle a non-successful response
+        error : function(xhr,errmsg,err) {
+            console.log("ERROR: "+errmsg)
+            alert("failure:"+errmsg)
+
+        }
+    });
+};
 
 //////////////////////////////
 function getCookie(name) {

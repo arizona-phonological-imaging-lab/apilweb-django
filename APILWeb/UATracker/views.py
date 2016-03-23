@@ -1,5 +1,5 @@
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, redirect
 from UATracker.models import Image, Tag, Experiment
 from UATracker.forms import SearchForm
 import re
@@ -10,6 +10,9 @@ import pdb
 import json
 import zipfile
 from django.template import RequestContext
+
+#needed for importing files
+import os
 
 @ensure_csrf_cookie
 def imageListView(request, page):
@@ -277,3 +280,29 @@ def calculateContext(result, conSize, showOnly):
         lastImage = image
         counter += 1
     return newResult, thickBorders, shaded
+
+
+
+#Trevor's stuff
+
+def addFilesView(request):
+    print(request);
+    if len(request.GET)>0:
+        if len(request.GET['projectTitle'])>0:
+            title = request.GET['projectTitle']
+            print("Project Title:", title)
+        if len(request.GET['projectLang'])>0:
+            lang = request.GET['projectLang']
+            print("Project Language:", lang)
+        if len(request.GET['filepath'])>0:
+            path = request.GET['filepath']
+            print("Image Directory:", path)
+
+    # add stuff to go to filepath and get the files there and add them to the database
+    filesindir = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path,f))]
+    print(filesindir)
+    
+    return redirect('/uat/successfullyadded/')
+
+def addsuccess(request):
+    return redirect('/uat/1')

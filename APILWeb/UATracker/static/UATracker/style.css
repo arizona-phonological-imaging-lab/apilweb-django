@@ -246,3 +246,22 @@ label{
 .dropdownMenuItem:hover{
 	background-color: #aaa;
 }
+
+
+/*    THE ADDDATA DIALOG   */
+#importDialog{
+	height: 300px;
+	width: 500px;
+	position: fixed;
+	top: 5;
+	margin: auto;
+	background-color: white;
+	right: 0;
+	left: 0;
+	bottom:0;
+	background-color: lightblue;
+	border: grey solid 1px;
+	border-radius: 0.3em;
+	z-index: 2;	
+	visibility: hidden;
+}
