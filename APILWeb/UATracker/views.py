@@ -286,6 +286,9 @@ def calculateContext(result, conSize, showOnly):
 #Trevor's stuff
 
 def addFilesView(request):
+
+    import re
+
     print(request);
     if len(request.GET)>0:
         if len(request.GET['projectTitle'])>0:
@@ -298,8 +301,30 @@ def addFilesView(request):
             path = request.GET['filepath']
             print("Image Directory:", path)
 
+
     # add stuff to go to filepath and get the files there and add them to the database
     filesindir = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path,f))]
+
+    bigdirpattern = re.compile("(\d*)\w_(\d*-\d*-\d*)")
+    pngpattern = re.compile("frame-(\d*.png)$")
+
+    for x in os.listdir(path):
+        if os.path.isdir(os.path.join(path,x)):
+            if bigdirpattern.match(x):
+                subject = re.search(bigdirpattern,x).group(1)
+                date = re.search(bigdirpattern,x).group(2)
+                for f in os.listdir(os.path.join(path,x,"frames")): 
+                    if pngpattern.match(f):
+                        filename = re.search(pngpattern,f).group(1)
+                        tracedpattern = re.compile("frame-"+filename+".(\w).traced.txt")
+                        for r in os.listdir(os.path.join(path,x,"frames")): 
+                            if pngpattern.match(r):
+                                tracer = re.search(tracedpattern,r).group(1)
+
+
+
+
+
     print(filesindir)
     
     return redirect('/uat/successfullyadded/')

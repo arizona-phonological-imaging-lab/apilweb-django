@@ -311,7 +311,7 @@ function showMenu(menuName){
 ////Trevor's stuff:
 function openImport() {
 	if (document.location.hostname != "localhost"){
-		alert("You do not have access to this function. This incident will be reported.")
+		alert("You do not have access to this function, only administrators physically present at the server can add to the database. \n\nThis incident will be reported. https://xkcd.com/838/")
 	}
 	else{
 		console.log("import dialog opened");
