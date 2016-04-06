@@ -4,6 +4,7 @@ from UATracker.models import Image
 from UATracker.forms import SearchForm
 import re
 from math import floor
+import time
 
 def imageListView(request, page=1):
     form = SearchForm()
@@ -192,4 +193,5 @@ def addFilesView(request):
     return redirect('/uat/successfullyadded/')
 
 def addsuccess(request):
-    return redirect('/uat/1')
+    time.sleep(1)
+    return redirect('/uatracker/success.html')
