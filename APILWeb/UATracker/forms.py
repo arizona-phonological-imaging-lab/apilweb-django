@@ -26,3 +26,4 @@ class SearchForm(forms.Form):
     language.widget.attrs['style'] = "width:115px"
     autotraced = forms.ChoiceField(label='Autotraced', choices= [["",""]]+[["Yes","Yes"], ["No","No"]])
     autotraced.widget.attrs['style'] = "width:115px"
+

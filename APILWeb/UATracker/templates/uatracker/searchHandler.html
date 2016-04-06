@@ -13,7 +13,9 @@
 		<div class="cell wordCell">Word</div>
 	</div>
 {% for image in visibleItems %}
+	{% autoescape off %}
 	{% printAppropriateRowOpeningTag forloop.counter %}
+	{% endautoescape %}
 		<div class="cell titleCell">{{ image.title }}&nbsp;</div>
 		<div class="cell videoCell">{{ image.video.title }}&nbsp;</div>
 		<div class="cell projectCell">{{ image.video.project.title }}&nbsp;</div>
@@ -22,10 +24,11 @@
 		<div class="cell tagCell">{{ image.getTagList }}&nbsp;</div>
 		<div class="cell segmentsCell">{{ image.getSegmentSequenceColored |safe }}&nbsp;</div>
 		<div class="cell wordCell">{{ image.word.spelling }}&nbsp;</div>
-		<div style="visibility: hidden;">{{image.id}}</div>		<!-- Just a stupid way to store data -->
+		<div style="visibility: hidden;">{{image.id}}</div>
     </div>
 {% endfor %}
 
+	<button type="button" id="clearSelectionButton" onClick="clearSelection()">Clear Selection</button>
 	<!-- Pagination -->
 	<div class="pagination">
     <span class="step-links">
@@ -44,21 +47,5 @@
         {% endif %}
     </span>
 	</div>
-</div>
-
-<div id="bufferPanel">
-	<div id="bufferPanelTitle">Buffer Panel</div>
-	<select id="listBox" size=20>
-		<!--
-	    <option class="lbo" value="1" selected="selected">Selection 1</option>
-	    <option class="lbo" value="2">Selection 2</option>
-	    <option class="lbo" value="3">Selection 3</option>
-	    -->
-	</select>
-	<div class="buttonContainer">
-		<button type="button" onClick="removeSelected()">Remove</button>
-		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-		<button type="button" onClick="clearBuffer()">Clear Buffer</button>
-	</div> 
 </div>
 </div>

@@ -21,8 +21,7 @@ from django.conf.urls import include, patterns, url
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^uat/', include('UATracker.urls',namespace='uatracker')),
-    url(r'^tracer/', include('tracer.urls')),
+    url(r'^uat/', include('UATracker.urls',namespace='uatracker'))
 ]
 
 

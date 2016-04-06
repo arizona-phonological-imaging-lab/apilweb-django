@@ -1,19 +1,135 @@
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render_to_response, redirect
-from UATracker.models import Image
+from UATracker.models import Image, Tag, Experiment
 from UATracker.forms import SearchForm
 import re
+from django.http import HttpResponse
 from math import floor
 import time
+from django.views.decorators.csrf import ensure_csrf_cookie
+import pdb
+import json
+import zipfile
+from django.template import RequestContext
 
-def imageListView(request, page=1):
+#needed for importing files
+import os
+
+@ensure_csrf_cookie
+def imageListView(request, page):
     form = SearchForm()
     readyMadeTableCode = searchHandlerView(request, page).getvalue()
-    return render_to_response('uatracker/imageList.html', {"tableCode": readyMadeTableCode, 'form': form})
+    return render_to_response('uatracker/imageList.html', {"tableCode": readyMadeTableCode, 'form': form},context_instance=RequestContext(request))
+
+@ensure_csrf_cookie
+def downloadView(request):
+    imageList = request.POST.get('ids')
+    isWithTrace = request.POST.get('withTrace')
+    zf = zipfile.ZipFile("myzipfile.zip", "w")
+    pdb.set_trace()
+    for id in imageList:
+        theImage = Image.objects.get(pk=id)
+        theAddress = theImage.address
+        print(theAddress)
+        zf.write(theAddress)
+    zf.close()
+    response = HttpResponse(zf, content_type='application/zip', )
+    response['Content-Disposition'] = 'attachment; filename=images.zip'
+    response['context_instance'] = RequestContext(request)
+    return response
+    
+def getAllIDsView(request):
+    result = getResults(request)
+    result = result[0]
+#     pdb.set_trace()
+    ids = []
+    for image in result:
+        ids.append(image.id)
+    print("length: "+str(len(ids)))
+    dumped = json.dumps(ids) 
+    return HttpResponse(dumped)
+
+def tagView(request):
+    imageList = request.POST.getlist('imgs[]')
+    newTag = request.POST.get('tagContent')
+    if(len(imageList)>0):
+        for i in imageList:
+            try:
+#                 pdb.set_trace()
+                t = Tag(image_id=int(i), content=newTag)
+                t.save()
+            except:
+                return HttpResponse("failure:"+sys.exc_info()[0])
+        return HttpResponse("success")
+    else:
+        return HttpResponse("failure")
+
+def untagView(request):
+    imageList = request.POST.getlist('imgs[]')
+    unwantedTag = request.POST.get('tagContent')
+    deletionCounter = 0;
+#     pdb.set_trace()
+    if(len(imageList)>0):
+        for i in imageList:
+            try:
+                ts = Tag.objects.filter(image_id=int(i), content=unwantedTag)
+                for t in ts: 
+                    t.delete()
+                    deletionCounter += 1
+            except:
+                pass
+        return HttpResponse(str(deletionCounter))
+    else:
+        return HttpResponse("failure")
+
+def addexpView(request):
+    imageList = request.POST.getlist('imgs[]')
+    newTag = request.POST.get('expContent')
+    if(len(imageList)>0):
+        for i in imageList:
+            try:
+#                 pdb.set_trace()
+                t = Experiment(image_id=int(i), content=newTag)
+                t.save()
+            except:
+                return HttpResponse("failure:"+sys.exc_info()[0])
+        return HttpResponse("success")
+    else:
+        return HttpResponse("failure")
+
+def removeexpView(request):
+    imageList = request.POST.getlist('imgs[]')
+    unwantedTag = request.POST.get('expContent')
+    deletionCounter = 0;
+    if(len(imageList)>0):
+        for i in imageList:
+            try:
+                ts = Experiment.objects.filter(image_id=int(i), content=unwantedTag)
+                for t in ts: 
+                    t.delete()
+                    deletionCounter += 1
+            except:
+                pass
+        return HttpResponse(str(deletionCounter))
+    else:
+        return HttpResponse("failure")
 
 def searchHandlerView(request, page):
-#     import pdb
-#     pdb.set_trace()
+    result, thickBorders, shaded = getResults(request)
+    paginator = Paginator(result, 20)
+    visibleItems = paginator.page(page)
+    #Recalculate thickBorders and shaded based on page number
+    pageThickBorders = {}
+    pageShaded = {}
+    for i in range(1,21):
+        overallIndex = (int(page)-1)*20 + (i-1)
+        if overallIndex in thickBorders:
+            pageThickBorders[i] = 1
+        if overallIndex in shaded:
+            pageShaded[i] = 1
+    return render_to_response('uatracker/searchHandler.html', {"visibleItems": visibleItems, "urlrequest":request.GET.copy(), "pageThickBorders": pageThickBorders, "pageShaded": pageShaded})
+
+def getResults(request):
     result = Image.objects.all()
     if len(request.GET)>0:
         if len(request.GET['theTitle'])>0:
@@ -58,18 +174,7 @@ def searchHandlerView(request, page):
         else:
             conSize = 0
         result, thickBorders, shaded = calculateContext(result,conSize,request.GET['show_only'])
-    paginator = Paginator(result, 20)
-    visibleItems = paginator.page(page)
-    #Recalculate thickBorders and shaded based on page number
-    pageThickBorders = {}
-    pageShaded = {}
-    for i in range(1,21):
-        overallIndex = (int(page)-1)*20 + (i-1)
-        if overallIndex in thickBorders:
-            pageThickBorders[i] = 1
-        if overallIndex in shaded:
-            pageShaded[i] = 1
-    return render_to_response('uatracker/searchHandler.html', {"visibleItems": visibleItems, "urlrequest":request.GET.copy(), "pageThickBorders": pageThickBorders, "pageShaded": pageShaded})
+    return result, thickBorders, shaded
 
 def getTargetSegment(inputt):
     inputt = inputt.strip()
@@ -178,17 +283,50 @@ def calculateContext(result, conSize, showOnly):
     return newResult, thickBorders, shaded
 
 
+
+#Trevor's stuff
+
 def addFilesView(request):
+
+    import re
+
     print(request);
     if len(request.GET)>0:
         if len(request.GET['projectTitle'])>0:
-            print("Project Title:", request.GET['projectTitle'])
+            title = request.GET['projectTitle']
+            print("Project Title:", title)
         if len(request.GET['projectLang'])>0:
-            print("Project Language:", request.GET['projectLang'])
+            lang = request.GET['projectLang']
+            print("Project Language:", lang)
         if len(request.GET['filepath'])>0:
-            print("Image Directory:", request.GET['filepath'])
+            path = request.GET['filepath']
+            print("Image Directory:", path)
+
 
     # add stuff to go to filepath and get the files there and add them to the database
+    filesindir = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path,f))]
+
+    bigdirpattern = re.compile("(\d*)\w_(\d*-\d*-\d*)")
+    pngpattern = re.compile("frame-(\d*.png)$")
+
+    for x in os.listdir(path):
+        if os.path.isdir(os.path.join(path,x)):
+            if bigdirpattern.match(x):
+                subject = re.search(bigdirpattern,x).group(1)
+                date = re.search(bigdirpattern,x).group(2)
+                for f in os.listdir(os.path.join(path,x,"frames")): 
+                    if pngpattern.match(f):
+                        filename = re.search(pngpattern,f).group(1)
+                        tracedpattern = re.compile("frame-"+filename+".(\w).traced.txt")
+                        for r in os.listdir(os.path.join(path,x,"frames")): 
+                            if pngpattern.match(r):
+                                tracer = re.search(tracedpattern,r).group(1)
+
+
+
+
+
+    print(filesindir)
     
     return redirect('/uat/successfullyadded/')
 
