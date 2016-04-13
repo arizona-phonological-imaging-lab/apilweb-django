@@ -324,8 +324,15 @@ def addFilesView(request):
                                 print("matched")
                                 tracer = re.search(mystring,r).group(1)
 
-                        #now we actually add some stuff
-                        newimage = Image(title=filename)
+                        # now we actually add some stuff
+                        # newproject = Project(title=title,language=lang)
+                        # newvideo = Video(project=newproject,subject=subject)
+
+                        newimage = Image(title=filename, ) #video=newvideo)
+                        # thetracer = Trace.objects.get(first_name = tracer)
+                        # newtrace = Trace(tracer=thetracer, image=newimage, date=date)
+                        # newtrace.save()
+
                         newimage.save()
 
 
