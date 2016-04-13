@@ -317,18 +317,24 @@ def addFilesView(request):
                 for f in os.listdir(os.path.join(path,x,"frames")): 
                     if pngpattern.match(f):
                         filename = re.search(pngpattern,f).group(1)
-                        tracedpattern = re.compile("frame-"+filename+".(\w).traced.txt")
+                        mystring = "frame-"+filename+".(\w).traced.txt"
+                        tracer = ""
                         for r in os.listdir(os.path.join(path,x,"frames")): 
-                            if pngpattern.match(r):
-                                tracer = re.search(tracedpattern,r).group(1)
+                            if re.match(mystring, r):
+                                print("matched")
+                                tracer = re.search(mystring,r).group(1)
+
+                        #now we actually add some stuff
+                        newimage = Image(title=filename)
+                        newimage.save()
 
 
 
 
 
-    print(filesindir)
+    # print(filesindir)
     
-    return redirect('/uat/successfullyadded/')
+    return redirect('/uat/1/')
 
 def addsuccess(request):
     time.sleep(1)
