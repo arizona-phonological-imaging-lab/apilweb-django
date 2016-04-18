@@ -1,6 +1,6 @@
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render_to_response, redirect
-from UATracker.models import Image, Tag, Experiment
+from UATracker.models import *
 from UATracker.forms import SearchForm
 import re
 from django.http import HttpResponse
@@ -309,31 +309,53 @@ def addFilesView(request):
     bigdirpattern = re.compile("(\d*)\w_(\d*-\d*-\d*)")
     pngpattern = re.compile("frame-(\d*.png)$")
 
+    import time
+
+    #get a list of tracers 
+    listotracers = Tracer.objects.values('first_name').distinct()
+    
+    newproject = Project(title=title, language=lang)
+    newproject.save()
+
     for x in os.listdir(path):
         if os.path.isdir(os.path.join(path,x)):
             if bigdirpattern.match(x):
                 subject = re.search(bigdirpattern,x).group(1)
-                date = re.search(bigdirpattern,x).group(2)
+                date = re.search(bigdirpattern,x).group(2)  #this is useless
+
+                newvideo = Video(project=newproject,subject=subject,title=x)
+
+                newvideo.save()
+
                 for f in os.listdir(os.path.join(path,x,"frames")): 
                     if pngpattern.match(f):
+
+
                         filename = re.search(pngpattern,f).group(1)
                         mystring = "frame-"+filename+".(\w).traced.txt"
                         tracer = ""
+
+                        #replace this with something that runs faster than n^2
                         for r in os.listdir(os.path.join(path,x,"frames")): 
                             if re.match(mystring, r):
                                 print("matched")
                                 tracer = re.search(mystring,r).group(1)
 
-                        # now we actually add some stuff
-                        # newproject = Project(title=title,language=lang)
-                        # newvideo = Video(project=newproject,subject=subject)
 
-                        newimage = Image(title=filename, ) #video=newvideo)
-                        # thetracer = Trace.objects.get(first_name = tracer)
+                        # now we actually add some stuff
+
+
+                        #add address in addition to title
+                        fullpath = os.path.join(path, x, "frames", f)
+
+                        newimage = Image(title=filename, video=newvideo, address=fullpath) 
+
+                        # thetracer = Tracer.objects.get(first_name = tracer)
                         # newtrace = Trace(tracer=thetracer, image=newimage, date=date)
+                        # thetracer.save()
+                        newimage.save()
                         # newtrace.save()
 
-                        newimage.save()
 
 
 
