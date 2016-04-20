@@ -314,6 +314,8 @@ def addFilesView(request):
     #get a list of tracers 
     listotracers = Tracer.objects.values('first_name').distinct()
     
+    print(listotracers)
+
     newproject = Project(title=title, language=lang)
     newproject.save()
 
@@ -332,7 +334,7 @@ def addFilesView(request):
 
 
                         filename = re.search(pngpattern,f).group(1)
-                        mystring = "frame-"+filename+".(\w).traced.txt"
+                        mystring = "frame-"+filename+".(\w+).traced.txt"
                         tracer = ""
 
                         #replace this with something that runs faster than n^2
@@ -341,25 +343,22 @@ def addFilesView(request):
                                 print("matched")
                                 tracer = re.search(mystring,r).group(1)
 
-
                         # now we actually add some stuff
-
-
                         #add address in addition to title
                         fullpath = os.path.join(path, x, "frames", f)
-
-                        newimage = Image(title=filename, video=newvideo, address=fullpath) 
-
-                        # thetracer = Tracer.objects.get(first_name = tracer)
-                        # newtrace = Trace(tracer=thetracer, image=newimage, date=date)
-                        # thetracer.save()
+                        newimage = Image(title=filename,video=newvideo, address=fullpath) 
                         newimage.save()
-                        # newtrace.save()
 
-
-
-
-
+                        #if there's a trace
+                        if tracer != "":
+                            print(tracer)
+                            if tracer in listotracers:
+                                thetracer = Tracer.objects.get(first_name = tracer)
+                            else:
+                                thetracer = Tracer(first_name=tracer)
+                            thetracer.save()
+                            newtrace = Trace(tracer=thetracer, image=newimage, date=date)
+                            newtrace.save()
 
     # print(filesindir)
     
