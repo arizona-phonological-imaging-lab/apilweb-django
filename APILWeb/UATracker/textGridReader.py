@@ -1,6 +1,6 @@
 from textgrid import TextGrid
-from models import Image,Word,Segment
-from nltk.grammar import sdg_demo
+from UATracker.models import Image,Word,Segment
+import re
 
 def readTextGrid(tgAddress, images):
     tg = TextGrid()
@@ -25,6 +25,8 @@ def readTextGrid(tgAddress, images):
                 id = addIntervalToDB(mark,simpleSpelling,tier.name)    #the second arg tells whether it is a word or a segment
             #assign the segment/word to the image:
             while(1):
+                if imageCounter%100==1:
+                    print(imageCounter)
                 imageCounter += 1
                 if imageCounter>len(images):
                     break
@@ -105,18 +107,18 @@ def addIntervalToDB(detailedSpelling, simpleSpelling,type):
         seg = Segment(spelling=simpleSpelling, detailed_spelling=detailedSpelling)
         seg.save()
     if type=="Words":
-        word = Word(spelling=spell)
+        word = Word(spelling=detailedSpelling)
         word.save()    
         
 def getSimpleSpelling(detailedSpelling):
     detailedSpelling = detailedSpelling.replace("neutral", "neut")
     detailedSpelling = detailedSpelling.strip()
     if " " in detailedSpelling:
-        result = re.compile("\s+").split(detailedSpelling)
-        if result.search(r"^.*[ifpncv]$") or result.endsWith("f") or result.search(r"^.*[0-9]$"):
+        result = re.compile("\s+").split(detailedSpelling)[1]
+        if re.search(r"^.*[ifpncv]$",result) or result.endswith("f") or re.search(r"^.*[0-9]$",result):
             if len(result)>1:
-                result = result[0,len(result)-1]                
-        if result.startsWith("V"):
+                result = result[0:]                
+        if result.startswith("V"):
             result = "V"
         return result
     else:
@@ -142,7 +144,11 @@ class WordEntry:
             self.segmentIDSequence += " "+segID
     
     
-    
-    
+# images = Image.objects.all()[:10000]
+# readTextGrid('/Users/Updates/git/apilweb-django/APILWeb/UATracker/example.TextGrid',images)
+# randomImages = Image.objects.filter(word__spelling='cuip')
+# print(len(randomImages))
+# self.assertGreater(len(randomImages), 0)
+#     
     
     

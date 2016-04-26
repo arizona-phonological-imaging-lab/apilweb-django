@@ -303,67 +303,78 @@ def addFilesView(request):
             print("Image Directory:", path)
 
 
-    # add stuff to go to filepath and get the files there and add them to the database
-    filesindir = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path,f))]
-
-    bigdirpattern = re.compile("(\d*)\w_(\d*-\d*-\d*)")
-    pngpattern = re.compile("frame-(\d*.png)$")
-
-    import time
-
     #get a list of tracers 
-    listotracers = Tracer.objects.values('first_name').distinct()
+    listOfTracers = Tracer.objects.values('first_name').distinct()
     
-    print(listotracers)
-
+    bigdirpattern = re.compile("(\d*)\w_(\d*-\d*-\d*)")
+    pngpattern = re.compile("(frame-)?(\d*.(png|jpg|PNG|JPG|JPEG))$")
     newproject = Project(title=title, language=lang)
     newproject.save()
-
-    for x in os.listdir(path):
-        if os.path.isdir(os.path.join(path,x)):
-            if bigdirpattern.match(x):
-                subject = re.search(bigdirpattern,x).group(1)
-                date = re.search(bigdirpattern,x).group(2)  #this is useless
-
+    
+    
+    for videoFolderName in os.listdir(path):
+        if os.path.isdir(os.path.join(path,videoFolderName)):            
+            if bigdirpattern.match(videoFolderName):
+                #Have a hashList of all of the files so that you can search for the corresponding image for each trace
+                allFilesInDir = dict()
+                for fileName in os.listdir(os.path.join(path,videoFolderName,"frames")):
+                    allFilesInDir[fileName] = 1
+                subject = re.search(bigdirpattern,videoFolderName).group(1)
                 newvideo = Video(project=newproject,subject=subject,title=x)
-
-                newvideo.save()
-
-                for f in os.listdir(os.path.join(path,x,"frames")): 
-                    if pngpattern.match(f):
-
-
-                        filename = re.search(pngpattern,f).group(1)
-                        mystring = "frame-"+filename+".(\w+).traced.txt"
-                        tracer = ""
-
-                        #replace this with something that runs faster than n^2
-                        for r in os.listdir(os.path.join(path,x,"frames")): 
-                            if re.match(mystring, r):
-                                print("matched")
-                                tracer = re.search(mystring,r).group(1)
-
-                        # now we actually add some stuff
-                        #add address in addition to title
-                        fullpath = os.path.join(path, x, "frames", f)
-                        newimage = Image(title=filename,video=newvideo, address=fullpath) 
-                        newimage.save()
-
-                        #if there's a trace
-                        if tracer != "":
-                            print(tracer)
-                            if tracer in listotracers:
-                                thetracer = Tracer.objects.get(first_name = tracer)
+                sawAnyFramesInDir = 0
+                
+                #Go through all of the images and traces and save them in allFilesInDir
+                for fullFileName in os.listdir(os.path.join(path,videoFolderName,"frames")): 
+                    if fullFileName.endswith('txt'):
+                        correspondingImageName = re.sub('\.[^\.]+\.traced\.txt','',fullFileName)
+                        if correspondingImageName in allFilesInDir:
+                            dictValue = allFilesInDir[correspondingImageName]
+                            tracer =   re.sub('^(.*\.)[^\.]+(\.traced\.txt)','\\2',fullFileName)
+                            if dictValue == 1:
+                                i = ImageRep('',fullFileName,tracer)
                             else:
-                                thetracer = Tracer(first_name=tracer)
-                            thetracer.save()
-                            newtrace = Trace(tracer=thetracer, image=newimage, date=date)
-                            newtrace.save()
+                                dictValue.trace = fullFileName
+                                dictValue.tracer = tracer
+                    if pngpattern.match(fullFileName):
+                        sawAnyFramesInDir = 1
+                        dictValue = allFilesInDir[fullFileName]
+                        if dictValue == 1:
+                            i = ImageRep(fullFileName,'','')
+                        else:
+                            dictValue.name = fullFileName
 
-    # print(filesindir)
+                if(sawAnyFramesInDir):
+                    newvideo.save()
+               
+                #Now add all of the images and their traces to the database:
+                for imageName, imageRep in allFilesInDir:
+                    if pngpattern.match(image):
+                        fullpath = os.path.join(path, x, "frames", imageName)
+                        newimage = Image(imageName, video=newvideo, address=fullpath)
+                        newimage.save()
+                        trace = imageRep.trace
+                        tracer = imageRep.tracer
+                        if trace!=None and len(trace)>0:
+                            if tracer==None or len(tracer)<1:
+                                print("Error! No tracer found for the trace file "+trace)
+                                continue
+                            if not tracer in listOfTracers:
+                                thetracer = Tracer(first_name = tracer)
+                                thetracer.save()
+                            else:
+                                thetracer = Tracer.objects.get(first_name = tracer)
+                            newtrace = Trace(tracer=thetracer, image=newimage)
+                            newtrace.save()
     
     return redirect('/uat/1/')
 
 def addsuccess(request):
     time.sleep(1)
     return redirect('/uatracker/success.html')
+
+
+class ImageRep:
+    def __init__(self,name,trace,tracer):
+        self.name = Name
+        self.trace = trace
+        self.tracer = tracer
