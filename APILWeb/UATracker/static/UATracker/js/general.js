@@ -42,6 +42,11 @@ $(document).ready(function(event) {
 	    }
 	});
 	prepareDialogBoxes();
+
+	if (document.location.hostname != "localhost"){
+		$('#dataMenuButton').css('visibility','hidden');
+	}
+	
 });
 function csrfSafeMethod(method) {
     // these HTTP methods do not require CSRF protection
@@ -315,7 +320,7 @@ function openImport() {
 	}
 	else{
 		console.log("import dialog opened");
-
+		$('#fullScreen').css('visibility','visible');
 		$('#importDialog').css('visibility', 'visible');
 	}
 	
@@ -332,6 +337,8 @@ function openImport() {
 
 function closeImport() {
 	console.log("Import dialog closed");
+
+	$('#fullScreen').css('visibility','hidden');	
 	$('#importDialog').css('visibility','hidden');
 }
 function addFile() {

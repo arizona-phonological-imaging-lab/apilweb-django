@@ -10,8 +10,8 @@
 <div class="generalBox menuBar">
 	<div class='menuButton' id='downloadMenuButton' onClick="showMenu('download')">Download</div>
 	<div class='menuButton' id='tagsMenuButton' onClick="showMenu('tags')">Tags</div>
-	<div class='menuButton' id='dataMenuButton' onClick="showMenu('data')">Data</div>	
 	<div class='menuButton' id='viewMenuButton' onClick="showMenu('view')">View</div>
+	<div class='menuButton' id='dataMenuButton' onClick="showMenu('data')">Data</div>	
 </div>
 
 
@@ -159,28 +159,29 @@
 	<div class='dropdownMenuItem' onClick='addExpBuffer()'>Add experiment to buffer images</div>
 	<div class='dropdownMenuItem' onClick='removeExpBuffer()'>Remove experiment from buffer images</div>
 </div>
+<div class='dropdownMenu' id='viewMenu'>
+	<div class='dropdownMenuItem'>Option 1</div>
+	<div class='dropdownMenuItem'>Option 2</div>
+</div>
 <div class='dropdownMenu' id='dataMenu'>
 	<div class='dropdownMenuItem' onClick="openImport()">Add standard project</div>
 	<div class='dropdownMenuItem'>Add custom project</div>
 	<div class='dropdownMenuItem'>Update standard project</div>
 	<div class='dropdownMenuItem'>Remove project</div>
 </div>
-<div class='dropdownMenu' id='viewMenu'>
-	<div class='dropdownMenuItem'>Option 1</div>
-	<div class='dropdownMenuItem'>Option 2</div>
-</div>
 
-<div id="importDialog">
-  <form action="/uat/addfiles/" id="importDialogForm">
-      <br><br><br>
-      <div >
-        Project Title: <input autofocus="autofocus" type="text" name="projectTitle"><br>
-      </div><br>
-      Language: <input type="text" name="projectLang"><br><br>
-      Image Directory: <input type="text" value="/home/trevor/Downloads/apilstuff/" name="filepath" id="path"> <!-- value="/path/to/directory/frames/" -->
-      <div id="disp_tmp_path"></div>
-      <br>
-      <input type="submit" value="Submit">
-  </form>
-      <button type="button" onclick="closeImport()">Close</button>
+<div id="importDialog" class='dialogBoxBig'>
+	<div class='dialogBoxHeader'>Import Images and Traces</div>
+	<div class='dialogBoxBody'>
+		<div class='dialogBoxText'>Enter the name of your project, the name of the language being investigated, and the complete path to the directory containing the videos. </div>
+		<br>
+		  <form action="/uat/addfiles/" id="importDialogForm">
+			Project Title: <input autofocus="autofocus" type="text" name="projectTitle"><br>
+			Language: <input type="text" name="projectLang"><br>
+			Image Directory: <input type="text" value="/home/trevor/Downloads/apilstuff/" name="filepath" id="path"> 	
+			<div id="disp_tmp_path"></div>
+			<input type="submit" value="Submit">
+			<button type="button" onclick="closeImport()">Cancel</button>
+		</form>
+	</div>
 </div>
