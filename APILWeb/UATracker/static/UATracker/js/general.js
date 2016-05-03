@@ -310,7 +310,7 @@ function showMenu(menuName){
 
 ////Trevor's stuff:
 function openImport() {
-	if (document.location.hostname != "localhost"){
+	if (document.location.hostname != "localhost" && document.location.hostname != "127.0.0.1"){
 		alert("You do not have access to this function, only administrators physically present at the server can add to the database. \n\nThis incident will be reported. https://xkcd.com/838/")
 	}
 	else{

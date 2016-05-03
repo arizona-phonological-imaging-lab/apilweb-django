@@ -1,8 +1,12 @@
 from textgrid import TextGrid
 from UATracker.models import Image,Word,Segment
-import re
+import re,time
+dbTimeInTG = 0
+
 
 def readTextGrid(tgAddress, images):
+    global dbTimeInTG
+    start = time.time()
     tg = TextGrid()
     tg.read(tgAddress)
     duration = tg.maxTime - tg.minTime
@@ -22,41 +26,51 @@ def readTextGrid(tgAddress, images):
                 continue
             #Add the new segment/word to the DB
             if len(mark)>0:
-                id = addIntervalToDB(mark,simpleSpelling,tier.name)    #the second arg tells whether it is a word or a segment
-            #assign the segment/word to the image:
-            while(1):
-                if imageCounter%100==1:
+                wordOrSeg = addIntervalToDB(mark,simpleSpelling,tier.name)    #the third arg tells whether it is a word or a segment
+            else:
+                continue
+            #assign the segment/word to all of the images it covers:
+            if imageCounter>0:
+                imageCounter -= 1   #So in the beginning of each interval we first check the last image we saw. It may need more than one seg.
+            while True:
+                if imageCounter%100==0:
                     print(imageCounter)
                 imageCounter += 1
-                if imageCounter>len(images):
+                if imageCounter>=len(images):
                     break
                 image = images[imageCounter]
                 imageMin = imageCounter*imageLength
                 imageMax = (imageCounter+1)*imageLength
                 imageCenter = (imageMin+imageMax)/2
                 #image center inside interval:
+                if imageMax<interval.minTime:
+                    continue
                 if imageCenter>interval.minTime and imageCenter<interval.maxTime:
-                    assignMainObject(image,id,tier.name)
+                    assignMainObject(image,wordOrSeg,tier.name)
                 #image has startSegment:
                 elif imageCenter>interval.maxTime and imageMin<interval.maxTime:
-                    assignStartObject(image,id,tier.name)
+                    assignStartObject(image,wordOrSeg,tier.name)
                 #image has endSegment:
                 elif imageCenter<interval.minTime and imageMax>interval.minTime:
-                    assignEndObject(image,id,tier.name)
-                #image is 
+                    assignEndObject(image,wordOrSeg,tier.name)
+                #image occurs after the interval
                 else:
                     imageCounter -= 1
                     break
             #Save it somewhere if it is a word:
             if tier.name=='Words':
-                word = WordEntry("","",interval.maxTime,id)
+                word = WordEntry("","",interval.maxTime,wordOrSeg.id)
                 words.append(word)
             #Now assign the segment to the word if it is a segment
             if tier.name=='Segments':
                 #Increment the words until you reach a word that covers the current segment:
                 while words[wordCounter].maxTime<interval.minTime:
+#                     file = open('log.txt', 'w')
+#                     file.write(words[wordCounter].maxTime+"\t"+interval.minTime+'\n')
+#                     file.close()
                     wordCounter += 1
                 word = words[wordCounter]
+                id = wordOrSeg.id
                 if len(mark.strip())<1:
                     simpleSpelling = "0"
                     id = "0"
@@ -65,59 +79,63 @@ def readTextGrid(tgAddress, images):
     #Now that we're done reading the TextGrid file, it's time to add the segment sequence for each word to the DB
     for word in words:
         word.updateSegmentsInDB()
-                
+    end = time.time()
+    file = open('log.txt', 'a')
+    elapsed = str(end-start)
+    file.write("textgrid: \t"+elapsed+'\n')
+    file.write("dbInTG: \t"+str(dbTimeInTG)+'\n')
+    file.close()           
  
-def assignMainObject(image,objectID,type): #e.g. (<image234>,[the id of the segment],"Segments")
-     image = Image.objects.get(pk=image.id)
+def assignMainObject(image,object,type): #e.g. (<image234>,[the id of the segment],"Segments")
      if type=="Words":
-         word = Word.objects.get(pk=objectID)
-         image.word = Word
-         image.save()
+         word = object
+         image.word = word
      elif type=="Segments":
-         segment = Segment.objects.get(pk=objectID)
-         image.segment = Segment
-         image.save()
+         segment = object
+         image.segment = segment
  
-def assignStartObject(image,objectID,type): 
-     image = Image.objects.get(pk=image.id)
+def assignStartObject(image,object,type): 
      if type=="Words":
-         word = Word.objects.get(pk=objectID)
-         image.start_word = Word
-         image.save()
+         word = object
+         image.start_word = word
      elif type=="Segments":
-         segment = Segment.objects.get(pk=objectID)
-         image.start_segment = Segment
-         image.save()
+         segment = object
+         image.start_segment = segment
          
-def assignEndObject(image,objectID,type): 
-     image = Image.objects.get(pk=image.id)
+def assignEndObject(image,object,type): 
      if type=="Words":
-         word = Word.objects.get(pk=objectID)
-         image.end_word = Word
-         image.save()
+         word = object
+         image.end_word = word
      elif type=="Segments":
-         segment = Segment.objects.get(pk=objectID)
-         image.end_segment = Segment
-         image.save()
-         
+         segment = object
+         image.end_segment = segment
          
          
 def addIntervalToDB(detailedSpelling, simpleSpelling,type):
+    start = time.time()
+    global dbTimeInTG
     if type=="Segments":
         seg = Segment(spelling=simpleSpelling, detailed_spelling=detailedSpelling)
         seg.save()
+        end = time.time()
+        dbTimeInTG += (end-start)
+        return seg
     if type=="Words":
         word = Word(spelling=detailedSpelling)
-        word.save()    
-        
+        word.save()
+        end = time.time()
+        dbTimeInTG += (end-start)    
+        return word
+    
+    
 def getSimpleSpelling(detailedSpelling):
-    detailedSpelling = detailedSpelling.replace("neutral", "neut")
+    detailedSpelling = detailedSpelling.replace("neutral", "0")
     detailedSpelling = detailedSpelling.strip()
     if " " in detailedSpelling:
         result = re.compile("\s+").split(detailedSpelling)[1]
         if re.search(r"^.*[ifpncv]$",result) or result.endswith("f") or re.search(r"^.*[0-9]$",result):
             if len(result)>1:
-                result = result[0:]                
+                result = result[0:-1]                
         if result.startswith("V"):
             result = "V"
         return result
@@ -131,10 +149,14 @@ class WordEntry:
         self.maxTime = maxTime
         self.id = id
     def updateSegmentsInDB(self):
+        start = time.time()
+        global dbTimeInTG
         word = Word.objects.get(pk=self.id)
         word.segment_sequence = self.segmentSequence
         word.segment_id_sequence = self.segmentIDSequence
         word.save()
+        end = time.time()
+        dbTimeInTG += (end-start)
     def addSegment(self,segID,segSpelling):
         if len(self.segmentSequence)==0:
             self.segmentSequence = segSpelling

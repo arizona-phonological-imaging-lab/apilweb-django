@@ -11,9 +11,11 @@ import pdb
 import json
 import zipfile
 from django.template import RequestContext
+from UATracker.textGridReader import readTextGrid
 
 #needed for importing files
 import os
+tracersList = {}
 
 @ensure_csrf_cookie
 def imageListView(request, page):
@@ -287,10 +289,10 @@ def calculateContext(result, conSize, showOnly):
 #Trevor's stuff
 
 def addFilesView(request):
-
-    import re
-
-    print(request);
+    start = time.time()
+    title = ''
+    lang = ''
+    path = ''
     if len(request.GET)>0:
         if len(request.GET['projectTitle'])>0:
             title = request.GET['projectTitle']
@@ -300,17 +302,16 @@ def addFilesView(request):
             print("Project Language:", lang)
         if len(request.GET['filepath'])>0:
             path = request.GET['filepath']
-            print("Image Directory:", path)
-
+    
 
     #get a list of tracers 
     listOfTracers = Tracer.objects.values('first_name').distinct()
     
     bigdirpattern = re.compile("(\d*)\w_(\d*-\d*-\d*)")
     pngpattern = re.compile("(frame-)?(\d*.(png|jpg|PNG|JPG|JPEG))$")
-    newproject = Project(title=title, language=lang)
+    projTitle = title
+    newproject = Project(title=projTitle, language=lang)
     newproject.save()
-    
     
     for videoFolderName in os.listdir(path):
         if os.path.isdir(os.path.join(path,videoFolderName)):            
@@ -320,18 +321,24 @@ def addFilesView(request):
                 for fileName in os.listdir(os.path.join(path,videoFolderName,"frames")):
                     allFilesInDir[fileName] = 1
                 subject = re.search(bigdirpattern,videoFolderName).group(1)
-                newvideo = Video(project=newproject,subject=subject,title=x)
+                newvideo = Video(project=newproject,subject=subject,title=videoFolderName)
                 sawAnyFramesInDir = 0
-                
+                #Find the TextGrid file:
+                textGridPath = ''
+                for fileName in os.listdir(os.path.join(path,videoFolderName)):
+                    if fileName.endswith('TextGrid') or fileName.endswith('Textgrid') or fileName.endswith('textgrid'):
+                        textGridPath = os.path.join(path,videoFolderName,fileName)
+                        break 
                 #Go through all of the images and traces and save them in allFilesInDir
                 for fullFileName in os.listdir(os.path.join(path,videoFolderName,"frames")): 
                     if fullFileName.endswith('txt'):
                         correspondingImageName = re.sub('\.[^\.]+\.traced\.txt','',fullFileName)
                         if correspondingImageName in allFilesInDir:
                             dictValue = allFilesInDir[correspondingImageName]
-                            tracer =   re.sub('^(.*\.)[^\.]+(\.traced\.txt)','\\2',fullFileName)
+                            tracer =   re.sub('^(.*\.)([^\.]+)(\.traced\.txt)','\\2',fullFileName)
                             if dictValue == 1:
                                 i = ImageRep('',fullFileName,tracer)
+                                allFilesInDir[correspondingImageName] = i
                             else:
                                 dictValue.trace = fullFileName
                                 dictValue.tracer = tracer
@@ -340,32 +347,53 @@ def addFilesView(request):
                         dictValue = allFilesInDir[fullFileName]
                         if dictValue == 1:
                             i = ImageRep(fullFileName,'','')
+                            allFilesInDir[fullFileName] = i
                         else:
                             dictValue.name = fullFileName
-
                 if(sawAnyFramesInDir):
                     newvideo.save()
+                else:
+                    continue
                
                 #Now add all of the images and their traces to the database:
-                for imageName, imageRep in allFilesInDir:
-                    if pngpattern.match(image):
-                        fullpath = os.path.join(path, x, "frames", imageName)
-                        newimage = Image(imageName, video=newvideo, address=fullpath)
-                        newimage.save()
-                        trace = imageRep.trace
-                        tracer = imageRep.tracer
-                        if trace!=None and len(trace)>0:
-                            if tracer==None or len(tracer)<1:
-                                print("Error! No tracer found for the trace file "+trace)
-                                continue
-                            if not tracer in listOfTracers:
-                                thetracer = Tracer(first_name = tracer)
-                                thetracer.save()
-                            else:
-                                thetracer = Tracer.objects.get(first_name = tracer)
-                            newtrace = Trace(tracer=thetracer, image=newimage)
-                            newtrace.save()
-    
+                images = [] #A list of Image objects that will be sent to TextGridReader
+                for imageName, imageRep in allFilesInDir.items():
+                    if pngpattern.match(imageName):
+                        fullpath = os.path.join(path, videoFolderName, "frames", imageName)
+                        cleanTitle = re.sub('.*?(\d+\..*)$','\\1',imageName)
+                        newImage = Image(title=cleanTitle, video=newvideo, address=fullpath, sorting_code=projTitle+videoFolderName+cleanTitle)
+                        images.append(newImage)
+                        imageRep.imageObj = newImage
+
+                #Get a list of the images (filter out the trace files)
+                images = sorted(images,key=lambda image:image.title)
+                readTextGrid(textGridPath,images)
+                Image.objects.bulk_create(images)
+                midway = time.time()
+#                 for image in images:
+#                     image.save()
+                #Now add the traces:
+                traces = []
+                for imageName, imageRep in allFilesInDir.items():
+                    if pngpattern.match(imageName):
+                        traceFileName = imageRep.trace
+                        tracerName = imageRep.tracer
+                        theImage = Image.objects.filter(sorting_code = imageRep.imageObj.sorting_code)[0]
+                        traceFilePath = os.path.join(path, videoFolderName, "frames", traceFileName)
+                        tracerObj = getTracerObj(tracerName)
+                        newTrace = Trace(address=traceFilePath, tracer=tracerObj, image=theImage)
+                        traces.append(newTrace)
+                Trace.objects.bulk_create(traces)
+                
+                
+                end = time.time()
+                file = open('log.txt', 'a')
+                full = str(end-start)
+                afterMidway = str(end-midway)
+                file.write("afterMidway: \t"+afterMidway+'\n')
+                file.write("full: \t"+full+'\n')
+                file.close()
+                
     return redirect('/uat/1/')
 
 def addsuccess(request):
@@ -373,8 +401,27 @@ def addsuccess(request):
     return redirect('/uatracker/success.html')
 
 
+
+def getTracerObj(tracerName):
+    global tracersList
+    if tracerName in tracersList:
+        return tracersList[tracerName]
+    else:
+        if Tracer.objects.filter(first_name=tracerName).exists():
+            tracer = Tracer.objects.filter(first_name=tracerName)[0]
+            tracersList[tracerName] = tracer
+            return tracer
+        else:
+            tracer = Tracer(first_name=tracerName)
+            tracer.save()
+            tracersList[tracerName] = tracer
+            return tracer
+            
+    
+
 class ImageRep:
     def __init__(self,name,trace,tracer):
-        self.name = Name
+        self.name = name
         self.trace = trace
         self.tracer = tracer
+        self.image = None
