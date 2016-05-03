@@ -187,6 +187,20 @@ label{
 	background-color: white;
 	border: 1px solid grey;
 }
+.dialogBoxBig{
+	position: fixed;
+	right: 0;
+	left: 0;
+	bottom: 300;
+	visibility: hidden;
+	width: 500px;
+	height: 200px;
+	z-index: 4;
+	margin: auto;
+	top: 1px;
+	background-color: white;
+	border: 1px solid grey;
+}
 .dialogBoxHeader{
 	color: white;
 	font-weight: bold;
@@ -249,7 +263,7 @@ label{
 
 
 /*    THE ADDDATA DIALOG   */
-#importDialog{
+/*#importDialog{
 	height: 300px;
 	width: 500px;
 	position: fixed;
@@ -264,4 +278,4 @@ label{
 	border-radius: 0.3em;
 	z-index: 2;	
 	visibility: hidden;
-}
+}*/
