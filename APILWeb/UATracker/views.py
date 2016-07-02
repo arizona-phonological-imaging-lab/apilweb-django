@@ -117,6 +117,9 @@ def removeexpView(request):
         return HttpResponse("failure")
 
 def searchHandlerView(request, page):
+    import logging
+    logger = logging.getLogger('hoo')
+    logger.error('alaki')
     result, thickBorders, shaded = getResults(request)
     paginator = Paginator(result, 20)
     visibleItems = paginator.page(page)
@@ -340,13 +343,13 @@ def addFilesView(request):
                                 i = ImageRep('',fullFileName,tracer)
                                 allFilesInDir[correspondingImageName] = i
                             else:
-                                dictValue.trace = fullFileName
-                                dictValue.tracer = tracer
+                                dictValue.traces.append(fullFileName)
+                                dictValue.tracers.append(tracer)
                     if pngpattern.match(fullFileName):
                         sawAnyFramesInDir = 1
                         dictValue = allFilesInDir[fullFileName]
                         if dictValue == 1:
-                            i = ImageRep(fullFileName,'','')
+                            i = ImageRep(fullFileName,{},{})
                             allFilesInDir[fullFileName] = i
                         else:
                             dictValue.name = fullFileName
@@ -361,7 +364,7 @@ def addFilesView(request):
                     if pngpattern.match(imageName):
                         fullpath = os.path.join(path, videoFolderName, "frames", imageName)
                         cleanTitle = re.sub('.*?(\d+\..*)$','\\1',imageName)
-                        newImage = Image(title=cleanTitle, video=newvideo, address=fullpath, sorting_code=projTitle+videoFolderName+cleanTitle)
+                        newImage = Image(title=cleanTitle, video=newvideo, address=fullpath, sorting_code=projTitle+videoFolderName+cleanTitle, trace_count=len(imageRep.traces))
                         images.append(newImage)
                         imageRep.imageObj = newImage
 
@@ -376,13 +379,16 @@ def addFilesView(request):
                 traces = []
                 for imageName, imageRep in allFilesInDir.items():
                     if pngpattern.match(imageName):
-                        traceFileName = imageRep.trace
-                        tracerName = imageRep.tracer
                         theImage = Image.objects.filter(sorting_code = imageRep.imageObj.sorting_code)[0]
-                        traceFilePath = os.path.join(path, videoFolderName, "frames", traceFileName)
-                        tracerObj = getTracerObj(tracerName)
-                        newTrace = Trace(address=traceFilePath, tracer=tracerObj, image=theImage)
-                        traces.append(newTrace)
+                        for i in range(len(imageRep.traces)):
+                            traceFileName = imageRep.traces[i]
+                            tracerName = imageRep.tracers[i]
+                            traceFilePath = os.path.join(path, videoFolderName, "frames", traceFileName)
+                            if len(tracerName)<1:
+                                tracerName = "-"
+                            tracerObj = getTracerObj(tracerName)
+                            newTrace = Trace(address=traceFilePath, tracer=tracerObj, image=theImage)
+                            traces.append(newTrace)
                 Trace.objects.bulk_create(traces)
                 
                 
@@ -422,6 +428,6 @@ def getTracerObj(tracerName):
 class ImageRep:
     def __init__(self,name,trace,tracer):
         self.name = name
-        self.trace = trace
-        self.tracer = tracer
+        self.traces = {trace}
+        self.tracers = {tracer}
         self.image = None
