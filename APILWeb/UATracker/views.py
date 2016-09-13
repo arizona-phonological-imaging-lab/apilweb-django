@@ -12,6 +12,7 @@ import time
 import pdb
 import json
 import zipfile
+from django.core.servers.basehttp import FileWrapper
 
 #needed for importing files
 import os
@@ -27,16 +28,20 @@ def imageListView(request, page):
 def downloadView(request):
     imageList = request.POST.get('ids')
     isWithTrace = request.POST.get('withTrace')
-    zf = zipfile.ZipFile("myzipfile.zip", "w")
-    pdb.set_trace()
+    zf = zipfile.ZipFile("imgs.zip", "w")
+    imageList = imageList.split(',')
     for id in imageList:
         theImage = Image.objects.get(pk=id)
         theAddress = theImage.address
-        print(theAddress)
-        zf.write(theAddress)
+        theName = os.path.basename(theAddress)
+        abs_src = os.path.abspath(theAddress)
+        print(abs_src)
+        zf.write(abs_src, os.path.join("imgs", theName))
     zf.close()
-    response = HttpResponse(zf, content_type='application/zip', )
+    fsock = open('imgs.zip',"rb")
+    response = HttpResponse(fsock, content_type='application/zip', )
     response['Content-Disposition'] = 'attachment; filename=images.zip'
+    response['X-Sendfile'] = zf
     response['context_instance'] = RequestContext(request)
     return response
     

@@ -250,6 +250,7 @@ function addToBuffer(){
 function downloadBufferImages(isWithTrace){
 	pourBufferImagesInTheRightVariable();
 	$('#theHiddenField').val(imagesToBeManipulated);
+	console.log(imagesToBeManipulated)
 	showDownloadDialog();
 	//TODO
 }

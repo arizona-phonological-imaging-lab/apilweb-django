@@ -143,9 +143,19 @@
 		<form method="post" action="../download/">
 			{% csrf_token %}
 			<input type="hidden" name="ids" id="theHiddenField" value="nothingYet"></input>
-			<input type="submit" value="Download" />
+			<input type="submit" value="Download" onClick="removeDialog()"/>
 			<button type="button" onClick="removeDialog()" id="cancel5">Cancel</button>
 		</form>
+	</div>
+</div>
+<div id='removeProjDialog' class='dialogBox'>
+	<div class='dialogBoxHeader'>Remove a project...</div>
+	<div class='dialogBoxBody'>
+		<div class='dialogBoxText'>Select the project you want to remove:</div>
+		<div id="removeProj">{{form.project}}</div>
+		<br>
+		<button type="button" onClick="removeProj()" id="removeExpButton">Submit</button>
+		<button type="button" onClick="removeDialog()" id="cancel7">Cancel</button>
 	</div>
 </div>
 <div id='fullScreen'></div>
