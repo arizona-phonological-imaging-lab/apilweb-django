@@ -279,3 +279,16 @@ label{
 	z-index: 2;	
 	visibility: hidden;
 }*/
+#waitingImage{
+	z-index: 5;
+	position: fixed;
+	right: 0;
+	left: 0;
+	margin: auto;
+	top: 70px;	
+	height: 35px;
+	width: 190px;
+	visibility: hidden;
+	font-size: 10px;
+	color: grey;
+}

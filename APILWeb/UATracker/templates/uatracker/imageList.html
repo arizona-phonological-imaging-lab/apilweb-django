@@ -2,6 +2,7 @@
 <link rel="stylesheet" type="text/css" href="{% static 'UATracker/style.css' %}" />
 <script type="text/javascript" src="{% static 'UATracker/js/jquery.js' %}" ></script>
 <script type="text/javascript" src="{% static 'UATracker/js/general.js' %}" ></script>
+<script type="text/javascript" src="{% static 'UATracker/js/dialogs.js' %}" ></script>
 
 
 <div class ="all"> 
@@ -147,7 +148,6 @@
 		</form>
 	</div>
 </div>
-
 <div id='fullScreen'></div>
 <div class='dropdownMenu' id='downloadMenu'>
 	<div class='dropdownMenuItem' onClick="downloadBufferImages('false')">Download buffer images</div>
@@ -164,24 +164,38 @@
 	<div class='dropdownMenuItem'>Option 2</div>
 </div>
 <div class='dropdownMenu' id='dataMenu'>
-	<div class='dropdownMenuItem' onClick="openImport()">Add standard project</div>
+	<div class='dropdownMenuItem' onClick="openImport(1)">Add standard project</div>
+	<div class='dropdownMenuItem' onClick="openImport(2)">Add standard project type 2</div>
 	<div class='dropdownMenuItem'>Add custom project</div>
 	<div class='dropdownMenuItem'>Update standard project</div>
 	<div class='dropdownMenuItem'>Remove project</div>
 </div>
 
-<div id="importDialog" class='dialogBoxBig'>
+<div id="importDialog" class='dialogBox dialogBoxBig'>
 	<div class='dialogBoxHeader'>Import Images and Traces</div>
 	<div class='dialogBoxBody'>
 		<div class='dialogBoxText'>Enter the name of your project, the name of the language being investigated, and the complete path to the directory containing the videos. </div>
 		<br>
-		  <form action="/uat/addfiles/" id="importDialogForm">
-			Project Title: <input autofocus="autofocus" type="text" name="projectTitle"><br>
-			Language: <input type="text" name="projectLang"><br>
-			Image Directory: <input type="text" value="/home/trevor/Downloads/apilstuff/" name="filepath" id="path"> 	
-			<div id="disp_tmp_path"></div>
-			<input type="submit" value="Submit">
-			<button type="button" onclick="closeImport()">Cancel</button>
-		</form>
+			<table><tr>
+				<td style="line-height: 24px;">
+					Project Title:<br>
+					Language:<br>
+					Image Directory: <br><br><br>
+				</td>
+				<td>
+					<form action="/alaki/" id="importDialogForm">
+						<input autofocus="autofocus" type="text" name="projectTitle" id='projectTitleTF' class="importTF"><br>
+						<input type="text" name="projectLang" id="projLangTF" class="importTF"><br>
+						<input type="text" value="" name="filepath" id="path" class="importTF">
+						<input type="hidden" name="type2" value="false"> 	
+						<div id="disp_tmp_path"></div>
+						<input id="importSubmitButton" type="submit" value="Submit">
+						<button type="button" onClick="removeDialog()" id="cancel6">Cancel</button>
+					</form>
+				</td>	  
+			</tr></table>
 	</div>
 </div>
+<div id="waitingImage"><img style='float: left; margin-right: 4px; margin-top: 5px;' src="{% static 'UATracker/images/ajax-loader.gif' %}"><div>This may take a few minutes <br>depending on the size of the project...</div></div>
+
+

@@ -1,17 +1,17 @@
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render_to_response, redirect
+from django.views.decorators.csrf import ensure_csrf_cookie
 from UATracker.models import *
 from UATracker.forms import SearchForm
-import re
 from django.http import HttpResponse
+from django.template import RequestContext
+from UATracker.textGridReader import readTextGrid
 from math import floor
+import re
 import time
-from django.views.decorators.csrf import ensure_csrf_cookie
 import pdb
 import json
 import zipfile
-from django.template import RequestContext
-from UATracker.textGridReader import readTextGrid
 
 #needed for importing files
 import os
@@ -292,115 +292,233 @@ def calculateContext(result, conSize, showOnly):
 #Trevor's stuff
 
 def addFilesView(request):
-    start = time.time()
-    title = ''
-    lang = ''
-    path = ''
-    if len(request.GET)>0:
-        if len(request.GET['projectTitle'])>0:
-            title = request.GET['projectTitle']
-            print("Project Title:", title)
-        if len(request.GET['projectLang'])>0:
-            lang = request.GET['projectLang']
-            print("Project Language:", lang)
-        if len(request.GET['filepath'])>0:
-            path = request.GET['filepath']
+    try:
+        start = time.time()
+        title = ''
+        lang = ''
+        path = ''
+        importType = ''
+        if len(request.GET)>0:
+            if len(request.GET['projectTitle'])>0:
+                title = request.GET['projectTitle']
+                print("Project Title:", title)
+            if len(request.GET['projectLang'])>0:
+                lang = request.GET['projectLang']
+                print("Project Language:", lang)
+            if len(request.GET['filepath'])>0:
+                path = request.GET['filepath']
+            if len(request.GET['type'])>0:
+                importType = request.GET['type']
+            
     
-
-    #get a list of tracers 
-    listOfTracers = Tracer.objects.values('first_name').distinct()
-    
-    bigdirpattern = re.compile("(\d*)\w_(\d*-\d*-\d*)")
-    pngpattern = re.compile("(frame-)?(\d*.(png|jpg|PNG|JPG|JPEG))$")
-    projTitle = title
-    newproject = Project(title=projTitle, language=lang)
-    newproject.save()
-    
-    for videoFolderName in os.listdir(path):
-        if os.path.isdir(os.path.join(path,videoFolderName)):            
-            if bigdirpattern.match(videoFolderName):
-                #Have a hashList of all of the files so that you can search for the corresponding image for each trace
-                allFilesInDir = dict()
-                for fileName in os.listdir(os.path.join(path,videoFolderName,"frames")):
-                    allFilesInDir[fileName] = 1
-                subject = re.search(bigdirpattern,videoFolderName).group(1)
-                newvideo = Video(project=newproject,subject=subject,title=videoFolderName)
-                sawAnyFramesInDir = 0
-                #Find the TextGrid file:
-                textGridPath = ''
-                for fileName in os.listdir(os.path.join(path,videoFolderName)):
-                    if fileName.endswith('TextGrid') or fileName.endswith('Textgrid') or fileName.endswith('textgrid'):
-                        textGridPath = os.path.join(path,videoFolderName,fileName)
-                        break 
-                #Go through all of the images and traces and save them in allFilesInDir
-                for fullFileName in os.listdir(os.path.join(path,videoFolderName,"frames")): 
-                    if fullFileName.endswith('txt'):
-                        correspondingImageName = re.sub('\.[^\.]+\.traced\.txt','',fullFileName)
-                        if correspondingImageName in allFilesInDir:
-                            dictValue = allFilesInDir[correspondingImageName]
-                            tracer =   re.sub('^(.*\.)([^\.]+)(\.traced\.txt)','\\2',fullFileName)
+        #get a list of tracers 
+        listOfTracers = Tracer.objects.values('first_name').distinct()
+        
+    #     bigdirpattern = re.compile("(\d*)\w_(\d*-\d*-\d*)")
+        pngpattern = re.compile("(frame-)?(\d*.(png|jpg|PNG|JPG|JPEG))$")
+        projTitle = title
+        newproject = Project(title=projTitle, language=lang)
+        projWasSaved = False
+        
+        
+        if importType=='1':
+            for videoFolderName in os.listdir(path):
+                if os.path.isdir(os.path.join(path,videoFolderName)):            
+                    #Have a hashList of all of the files so that you can search for the corresponding image for each trace
+                    allFilesInDir = dict()
+                    for fileName in os.listdir(os.path.join(path,videoFolderName,"frames")):
+                        allFilesInDir[fileName[:-4]] = 1
+                    subject = re.search(bigdirpattern,videoFolderName).group(1)
+                    newvideo = Video(project=newproject,subject=subject,title=videoFolderName)
+                    sawAnyFramesInDir = 0
+                    #Find the TextGrid file:
+                    textGridPath = ''
+                    for fileName in os.listdir(os.path.join(path,videoFolderName)):
+                        if fileName.endswith('TextGrid') or fileName.endswith('Textgrid') or fileName.endswith('textgrid'):
+                            textGridPath = os.path.join(path,videoFolderName,fileName)
+                            break 
+                    #Go through all of the images and traces and save them in allFilesInDir
+                    for fullFileName in os.listdir(os.path.join(path,videoFolderName,"frames")): 
+                        if fullFileName.endswith('txt'):
+                            correspondingImageName = re.sub('\.[^\.]+\.traced\.txt','',fullFileName)
+                            if correspondingImageName in allFilesInDir:
+                                dictValue = allFilesInDir[correspondingImageName]
+                                tracer =   re.sub('^(.*\.)([^\.]+)(\.traced\.txt)','\\2',fullFileName)
+                                if dictValue == 1:
+                                    i = ImageRep('',fullFileName,tracer)
+                                    allFilesInDir[correspondingImageName] = i
+                                else:
+                                    dictValue.traces.append(fullFileName)
+                                    dictValue.tracers.append(tracer)
+                        if pngpattern.match(fullFileName):
+                            sawAnyFramesInDir = 1
+                            dictValue = allFilesInDir[fullFileName]
                             if dictValue == 1:
-                                i = ImageRep('',fullFileName,tracer)
-                                allFilesInDir[correspondingImageName] = i
+                                i = ImageRep(fullFileName,[],[])
+                                allFilesInDir[fullFileName] = i
                             else:
-                                dictValue.traces.append(fullFileName)
-                                dictValue.tracers.append(tracer)
-                    if pngpattern.match(fullFileName):
-                        sawAnyFramesInDir = 1
-                        dictValue = allFilesInDir[fullFileName]
-                        if dictValue == 1:
-                            i = ImageRep(fullFileName,{},{})
-                            allFilesInDir[fullFileName] = i
-                        else:
-                            dictValue.name = fullFileName
-                if(sawAnyFramesInDir):
-                    newvideo.save()
-                else:
+                                dictValue.name = fullFileName
+                    if(sawAnyFramesInDir):
+                        if not projWasSaved:
+                            newproject.save()
+                            projWasSaved = True
+                        newvideo.save()
+                    else:
+                        continue
+                   
+                    #Now add all of the images and their traces to the database:
+                    images = [] #A list of Image objects that will be sent to TextGridReader
+                    for imageName, imageRep in allFilesInDir.items():
+                        if pngpattern.match(imageName):
+                            fullpath = os.path.join(path, videoFolderName, "frames", imageName)
+                            cleanTitle = re.sub('.*?(\d+\..*)$','\\1',imageName)
+                            newImage = Image(title=cleanTitle, video=newvideo, address=fullpath, sorting_code=projTitle+videoFolderName+cleanTitle, trace_count=len(imageRep.traces))
+                            images.append(newImage)
+                            imageRep.imageObj = newImage
+    
+                    #Get a list of the images (filter out the trace files)
+                    images = sorted(images,key=lambda image:image.title)
+                    readTextGrid(textGridPath,images)
+                    Image.objects.bulk_create(images)
+                    midway = time.time()
+    #                 for image in images:
+    #                     image.save()
+                    #Now add the traces:
+                    traces = []
+                    for imageName, imageRep in allFilesInDir.items():
+                        if pngpattern.match(imageName):
+                            theImage = Image.objects.filter(sorting_code = imageRep.imageObj.sorting_code)[0]
+                            for i in range(len(imageRep.traces)):
+                                traceFileName = imageRep.traces[i]
+                                tracerName = imageRep.tracers[i]
+                                traceFilePath = os.path.join(path, videoFolderName, "frames", traceFileName)
+                                if len(tracerName)<1:
+                                    tracerName = "-"
+                                tracerObj = getTracerObj(tracerName)
+                                newTrace = Trace(address=traceFilePath, tracer=tracerObj, image=theImage)
+                                traces.append(newTrace)
+                    Trace.objects.bulk_create(traces)
+                    
+                    
+                    end = time.time()
+                    file = open('log.txt', 'a')
+                    full = str(end-start)
+                    afterMidway = str(end-midway)
+                    today = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+                    file.write('------------------------\n')
+                    file.write(today+'\n')
+                    file.write("afterMidway: \t"+afterMidway+'\n')
+                    file.write("full: \t"+full+'\n')
+                    file.close()
+                        
+        ####################################################################################
+        else: #if importType=2
+            for subjectFolderName in os.listdir(path):
+                if not os.path.isdir(os.path.join(path,subjectFolderName)):
                     continue
-               
-                #Now add all of the images and their traces to the database:
-                images = [] #A list of Image objects that will be sent to TextGridReader
-                for imageName, imageRep in allFilesInDir.items():
-                    if pngpattern.match(imageName):
-                        fullpath = os.path.join(path, videoFolderName, "frames", imageName)
-                        cleanTitle = re.sub('.*?(\d+\..*)$','\\1',imageName)
-                        newImage = Image(title=cleanTitle, video=newvideo, address=fullpath, sorting_code=projTitle+videoFolderName+cleanTitle, trace_count=len(imageRep.traces))
-                        images.append(newImage)
-                        imageRep.imageObj = newImage
-
-                #Get a list of the images (filter out the trace files)
-                images = sorted(images,key=lambda image:image.title)
-                readTextGrid(textGridPath,images)
-                Image.objects.bulk_create(images)
-                midway = time.time()
-#                 for image in images:
-#                     image.save()
-                #Now add the traces:
-                traces = []
-                for imageName, imageRep in allFilesInDir.items():
-                    if pngpattern.match(imageName):
-                        theImage = Image.objects.filter(sorting_code = imageRep.imageObj.sorting_code)[0]
-                        for i in range(len(imageRep.traces)):
-                            traceFileName = imageRep.traces[i]
-                            tracerName = imageRep.tracers[i]
-                            traceFilePath = os.path.join(path, videoFolderName, "frames", traceFileName)
-                            if len(tracerName)<1:
-                                tracerName = "-"
-                            tracerObj = getTracerObj(tracerName)
-                            newTrace = Trace(address=traceFilePath, tracer=tracerObj, image=theImage)
-                            traces.append(newTrace)
-                Trace.objects.bulk_create(traces)
-                
-                
-                end = time.time()
-                file = open('log.txt', 'a')
-                full = str(end-start)
-                afterMidway = str(end-midway)
-                file.write("afterMidway: \t"+afterMidway+'\n')
-                file.write("full: \t"+full+'\n')
-                file.close()
-                
-    return redirect('/uat/1/')
+                splitWavesDirPath = os.listdir(os.path.join(path,subjectFolderName,"splitWavesDir"))
+                for sentenceFolderName in splitWavesDirPath:
+                    sentencePath = os.path.join(path,subjectFolderName,"splitWavesDir",sentenceFolderName)
+                    if not os.path.isdir(sentencePath):
+                        continue
+                    for potentialTextGrid in os.listdir(sentencePath):
+                        if potentialTextGrid.endswith('TextGrid') or potentialTextGrid.endswith('Textgrid') or potentialTextGrid.endswith('textgrid'):
+                            textGridPath = os.path.join(sentencePath,potentialTextGrid)
+                            break
+                    #Found the textGrid file. Now get the images and traces
+                    imageAndTraceFolderPath = os.path.join(sentencePath,'frames')
+                    if not os.path.isdir(imageAndTraceFolderPath):
+                        continue
+                    #Have a hashList of all of the files so that you can search for the corresponding image for each trace
+                    allFilesInDir = dict()
+                    for fileName in os.listdir(imageAndTraceFolderPath):
+                        allFilesInDir[fileName] = 1
+                    newvideo = Video(subject=subjectFolderName,title=sentenceFolderName+"_"+subjectFolderName)
+                    sawAnyFramesInDir = 0
+                    #Go through all of the images and traces and save them in allFilesInDir
+                    for fullFileName in os.listdir(imageAndTraceFolderPath): 
+                        if fullFileName.endswith('txt'):
+                            correspondingImageName = re.sub('\.[^\.]+\.traced\.txt','',fullFileName)
+                            if correspondingImageName in allFilesInDir:
+                                dictValue = allFilesInDir[correspondingImageName]
+                                tracer = re.sub('^(.*\.)([^\.]+)(\.traced\.txt)','\\2',fullFileName)
+                                if dictValue == 1:
+                                    i = ImageRep('',fullFileName,tracer)
+                                    allFilesInDir[correspondingImageName] = i
+                                else:
+                                    dictValue.traces.append(fullFileName)
+                                    dictValue.tracers.append(tracer)
+                        if pngpattern.match(fullFileName):
+                            sawAnyFramesInDir = 1
+                            dictValue = allFilesInDir[fullFileName]
+                            if dictValue == 1:
+                                i = ImageRep(fullFileName,[],[])
+                                allFilesInDir[fullFileName] = i
+                            else:
+                                dictValue.name = fullFileName
+                    if(sawAnyFramesInDir):
+                        if not projWasSaved:
+                            newproject.save()
+                            projWasSaved = True
+                        newvideo.project = newproject
+                        newvideo.save()
+                    else:
+                        continue
+                    
+                    print(Video.objects.count())
+                    videos = Video.objects.all()
+                    for v in videos:
+                        if v.project_id is not None:
+                            print("v: "+v.title+"\t"+str(v.project_id))
+                        else:
+                            print("v: "+v.title+"\tNone")
+                            
+                    #Now add all of the images and their traces to the database:
+                    images = [] #A list of Image objects that will be sent to TextGridReader
+                    for imageName, imageRep in allFilesInDir.items():
+                        if pngpattern.match(imageName):
+                            fullpath = os.path.join(imageAndTraceFolderPath, imageName)
+                            cleanTitle = re.sub('.*?(\d+\..*)$','\\1',imageName)
+                            newImage = Image(title=cleanTitle, video=newvideo, address=fullpath, sorting_code=projTitle+sentenceFolderName+cleanTitle, trace_count=len(imageRep.traces))
+                            images.append(newImage)
+                            imageRep.imageObj = newImage
+    
+                    #Get a list of the images (filter out the trace files)
+                    images = sorted(images,key=lambda image:image.title)
+                    readTextGrid(textGridPath,images)
+                    Image.objects.bulk_create(images)
+                    midway = time.time()
+    #                 for image in images:
+    #                     image.save()
+                    #Now add the traces:
+                    traces = []
+                    for imageName, imageRep in allFilesInDir.items():
+                        if pngpattern.match(imageName):
+                            theImage = Image.objects.filter(sorting_code = imageRep.imageObj.sorting_code)[0]
+                            for i in range(len(imageRep.traces)):
+                                traceFileName = imageRep.traces[i]
+                                tracerName = imageRep.tracers[i]
+                                traceFilePath = os.path.join(imageAndTraceFolderPath, traceFileName)
+                                if len(tracerName)<1:
+                                    tracerName = "-"
+                                tracerObj = getTracerObj(tracerName)
+                                newTrace = Trace(address=traceFilePath, tracer=tracerObj, image=theImage)
+                                traces.append(newTrace)
+                    Trace.objects.bulk_create(traces)
+                    
+                    
+                    end = time.time()
+                    file = open('log.txt', 'a')
+                    full = str(end-start)
+                    afterMidway = str(end-midway)
+                    file.write("afterMidway: \t"+afterMidway+'\n')
+                    file.write("full: \t"+full+'\n')
+                    file.close()
+        if not projWasSaved:
+            return HttpResponse("Failure: No frames could be found in the expected subdirectories.")
+        return HttpResponse("The project was loaded successfully!")
+    except Exception as e:
+        return HttpResponse("Failure: "+str(e))
 
 def addsuccess(request):
     time.sleep(1)
@@ -428,6 +546,6 @@ def getTracerObj(tracerName):
 class ImageRep:
     def __init__(self,name,trace,tracer):
         self.name = name
-        self.traces = {trace}
-        self.tracers = {tracer}
+        self.traces = trace
+        self.tracers = tracer
         self.image = None

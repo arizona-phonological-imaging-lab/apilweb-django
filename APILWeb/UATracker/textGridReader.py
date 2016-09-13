@@ -33,8 +33,8 @@ def readTextGrid(tgAddress, images):
             if imageCounter>0:
                 imageCounter -= 1   #So in the beginning of each interval we first check the last image we saw. It may need more than one seg.
             while True:
-                if imageCounter%100==0:
-                    print(imageCounter)
+#                 if imageCounter%100==0:
+#                     print("annotating image: "+str(imageCounter))
                 imageCounter += 1
                 if imageCounter>=len(images):
                     break

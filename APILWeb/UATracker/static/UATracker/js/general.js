@@ -3,7 +3,7 @@ var endID;
 var selecting;
 var bpsc = 1; //Buffer Panel Selection Counter
 var imagesToBeManipulated = [];
-
+var importType = 1;
 
 $(document).ready(function(event) {
 	
@@ -42,10 +42,23 @@ $(document).ready(function(event) {
 	    }
 	});
 	prepareDialogBoxes();
+	
+	$(document).ajaxStart(function(){
+	    $("input").prop("disabled", true);
+	    $("button").prop("disabled", true);
+	    $("#waitingImage").css("visibility", 'visible');
+	});
 
-	if (document.location.hostname != "localhost"){
+	$(document).ajaxComplete(function(){
+		$("input").prop("disabled", false);
+		$("button").prop("disabled", false);
+		$("#waitingImage").css("visibility", 'hidden');
+	});
+
+	if (document.location.hostname != "localhost" && document.location.hostname != "127.0.0.1"){
 		$('#dataMenuButton').css('visibility','hidden');
 	}
+	
 	
 });
 function csrfSafeMethod(method) {
@@ -184,48 +197,6 @@ function clearSelection(){
 	});
 }
 
-function prepareDialogBoxes(){
-	$('#tagTF').keypress(function(event){
-	    if(event.keyCode == 13){
-	    	event.preventDefault();
-	        $("#tagButton").click();
-	    }
-	    else if(event.keyCode == 27){
-	    	event.preventDefault();
-	        $("#cancel1").click();
-	    }
-	});
-	$('#untagTF').keypress(function(event){
-	    if(event.keyCode == 13){
-	    	event.preventDefault();
-	        $("#untagButton").click();
-	    }
-	    else if(event.keyCode == 27){
-	    	event.preventDefault();
-	        $("#cancel2").click();
-	    }
-	});
-	$('#addExpTF').keypress(function(event){
-	    if(event.keyCode == 13){
-	    	event.preventDefault();
-	        $("#addExpButton").click();
-	    }
-	    else if(event.keyCode == 27){
-	    	event.preventDefault();
-	        $("#cancel4").click();
-	    }
-	});
-	$('#removeExpTF').keypress(function(event){
-	    if(event.keyCode == 13){
-	    	event.preventDefault();
-	        $("#removeExpButton").click();
-	    }
-	    else if(event.keyCode == 27){
-	    	event.preventDefault();
-	        $("#cancel3").click();
-	    }
-	});
-}
 
 ////////////The buffer panel///////////////
 function addSearchResultsToBP(){
@@ -301,98 +272,6 @@ function showMenu(menuName){
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-////Trevor's stuff:
-function openImport() {
-	if (document.location.hostname != "localhost" && document.location.hostname != "127.0.0.1"){
-		alert("You do not have access to this function, only administrators physically present at the server can add to the database. \n\nThis incident will be reported. https://xkcd.com/838/")
-	}
-	else{
-		console.log("import dialog opened");
-		$('#fullScreen').css('visibility','visible');
-		$('#importDialog').css('visibility', 'visible');
-	}
-	
-	// $.ajax({
-	// 	url: "http://127.0.0.1:8000/uat/1",
-	// 	type: "GET",
-	// 	data: "",
-	// 	success: function(response) {
-	// 		$('#dialogBox').append(response);
-	// 	} ,
-	// 	error:  function(x, y, z){}
-	// });
-}
-
-function closeImport() {
-	console.log("Import dialog closed");
-
-	$('#fullScreen').css('visibility','hidden');	
-	$('#importDialog').css('visibility','hidden');
-}
-function addFile() {
-	console.log("file dialog opened");
-	var newThing = document.getElementById('i_file').value;
-	// $("#preview").fadeIn("fast").attr('src',URL.createObjectURL(event.target.files[0]));
-
-		console.log("newThing grabbed"+newThing)
-		if (newThing) {
-			var startIndex = (newThing.indexOf('\\') >=0 ? newThing.lastIndexOf('\\') : newThing.lastIndexOf('/'));
-			var filename = newThing.substring(startIndex);
-			if (filename.indexOf('\\') === 0 || filename.indexOf('/') === 0) {
-				filename = filename.substring(1);
-			}
-		}
-
-		var str = document.getElementById('path').value;
-		if (str.substr(str.length - 1) != '/'){
-			str = str + '/';
-		}
-		var str = str + filename;
-		$("#disp_tmp_path").html("Complete Path: <strong>"+str+"</strong>");
-}
-function deleteItem() {
-	var selection = document.getElementById("imageSequences");
-	console.log( "item " + selection.options[ selection.selectedIndex ].value + " deleted");
-}
-
-function submitImport() {
-	var serialized = $('#importDialogForm').serialize();
-	serialized = serialized.replace("tracers=m","tracers=3");
-    
-
-    $.ajax({
-        url : "../addfiles/",
-        type : "GET", // http method
-        data : serialized, 
-        // handle a successful response
-        success : function(newCode) {
-        	console.log("successfully read")
-        	alert("Success!")
-        	
-        	$( "#importDialog" ).css('visibility','hidden');
-        },
-
-        // handle a non-successful response
-        error : function(xhr,errmsg,err) {
-            console.log("ERROR: "+errmsg)
-            alert("failure:"+errmsg)
-
-        }
-    });
-};
-
 //////////////////////////////
 function getCookie(name) {
     var cookieValue = null;
@@ -410,182 +289,3 @@ function getCookie(name) {
     return cookieValue;
 }
 
-
-
-
-
-
-////////////DB Manipulation///////////////
-function rgtClkMenuTag(){
-	pourHighlightedImagesToTheRightVariable();
-	$('#rightClickMenu').css('visibility','hidden');
-	showTaggingDialog();
-}
-function rgtClkMenuUntag(){
-	pourHighlightedImagesToTheRightVariable();
-	$('#rightClickMenu').css('visibility','hidden');
-	showUntaggingDialog();
-}
-function tagBuffer(){
-	pourBufferImagesInTheRightVariable();
-	showTaggingDialog();
-	
-}
-function untagBuffer(){
-	//The function that's called when the menu item for untagging the images in the buffer panel is clicked
-	pourBufferImagesInTheRightVariable();
-	showUntaggingDialog();	
-}
-function pourBufferImagesInTheRightVariable(){
-	var hash = {};
-	$('#listBox').children().each(function () {
-   		for (var i=0;i<$(this).data('ids').length;i++){
-   			var id = $(this).data('ids')[i];
-   			hash[id]= true;
-   		} 
-	});
-	var imageIDs = Object.keys(hash);
-	imagesToBeManipulated = imageIDs;
-}
-function showTaggingDialog(){
-	$('#fullScreen').css('visibility','visible');
-	$('#taggingDialog').css('visibility','visible');
-	$('#tagTF').focus();
-}
-
-function showUntaggingDialog(){
-	$('#fullScreen').css('visibility','visible');
-	$('#untaggingDialog').css('visibility','visible');
-	$('#untagTF').focus();
-}
-function removeDialog(){
-		$('#fullScreen').css('visibility','hidden');
-		$('.dialogBox').css('visibility','hidden');
-}
-function tag(){
-	
-	$.ajax({
-        url : "../tag/",
-        type : "POST", // http method
-        data : {imgs: imagesToBeManipulated, tagContent: $('#tagTF').val()},  
-        // handle a successful response
-        success : function(response) {
-        	alert("Successfully tagged images!");
-        	console.log(response);
-        	reloadTable();
-        },
-
-        // handle a non-successful response
-        error : function(xhr,errmsg,err) {
-        	alert("Something went wrong!");
-            console.log("ERROR: "+errmsg)
-        }
-    });
-    removeDialog();
-}
-function untag(){
-	
-	$.ajax({
-        url : "../untag/",
-        type : "POST", // http method
-        data : {imgs: imagesToBeManipulated, tagContent: $('#untagTF').val()},  
-        // handle a successful response
-        success : function(response) {
-        	alert("Successfully removed "+response+" tags!");
-        	console.log(response);
-        	reloadTable();
-        },
-
-        // handle a non-successful response
-        error : function(xhr,errmsg,err) {
-        	alert("Something went wrong!");
-            console.log("ERROR: "+errmsg)
-        }
-    });
-    removeDialog();
-}
-
-function pourHighlightedImagesToTheRightVariable(){
-	var selectedImages = [];
-	$(".mainTableRow").each(function( index ) {
-		if($(this).data("selected")==true){
-			selectedImages.push($(this).children().last().html());
-		}
-	});
-	//Now the variable selectedImages contains the IDs of the selected images.
-	imagesToBeManipulated = selectedImages;
-}
-
-////THIS IS STUDPID BUT NOW I HAVE THE SAME FUNCTIONS FOR EXPERIMENTS INSTEAD OF TAGS
-function rgtClkMenuAddExp(){
-	pourHighlightedImagesToTheRightVariable();
-	$('#rightClickMenu').css('visibility','hidden');
-	showAddExpDialog();
-}
-function rgtClkMenuRemoveExp(){
-	pourHighlightedImagesToTheRightVariable();
-	$('#rightClickMenu').css('visibility','hidden');
-	showRemoveExpDialog();
-}
-function addExpBuffer(){
-	pourBufferImagesInTheRightVariable();
-	showAddExpDialog();
-	
-}
-function removeExpBuffer(){
-	pourBufferImagesInTheRightVariable();
-	showRemoveExpDialog();	
-}
-function showAddExpDialog(){
-	$('#fullScreen').css('visibility','visible');
-	$('#addExpDialog').css('visibility','visible');
-	$('#addExpTF').focus();
-}
-
-function showRemoveExpDialog(){
-	$('#fullScreen').css('visibility','visible');
-	$('#removeExpDialog').css('visibility','visible');
-	$('#removeExpTF').focus();
-}
-function addExp(){
-	
-	$.ajax({
-        url : "../addexp/",
-        type : "POST", // http method
-        data : {imgs: imagesToBeManipulated, expContent: $('#addExpTF').val()},  
-        // handle a successful response
-        success : function(response) {
-        	alert("Successfully added experiment to images!");
-        	console.log(response);
-        	reloadTable();
-        },
-
-        // handle a non-successful response
-        error : function(xhr,errmsg,err) {
-        	alert("Something went wrong!");
-            console.log("ERROR: "+errmsg)
-        }
-    });
-    removeDialog();
-}
-function removeExp(){
-	
-	$.ajax({
-        url : "../removeexp/",
-        type : "POST", // http method
-        data : {imgs: imagesToBeManipulated, expContent: $('#removeExpTF').val()},  
-        // handle a successful response
-        success : function(response) {
-        	alert("Successfully removed "+response+" experiment tags!");
-        	console.log(response);
-        	reloadTable();
-        },
-
-        // handle a non-successful response
-        error : function(xhr,errmsg,err) {
-        	alert("Something went wrong!");
-            console.log("ERROR: "+errmsg)
-        }
-    });
-    removeDialog();
-}
