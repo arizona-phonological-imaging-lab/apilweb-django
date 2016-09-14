@@ -13,6 +13,7 @@ import pdb
 import json
 import zipfile
 from django.core.servers.basehttp import FileWrapper
+from django.db.models import Q
 
 #needed for importing files
 import os
@@ -168,7 +169,14 @@ def getResults(request):
         if len(request.GET['word'])>0:
             result = result.filter(word__spelling=request.GET['word'])
         if len(request.GET['segment'])>0:
-            result = result.filter(segment__spelling=getTargetSegment(request.GET['segment']))
+            inputSeg = re.sub('\d','',request.GET['segment'])
+            targetSeg = getTargetSegment(request.GET['segment'])
+            if targetSeg.endswith('*'):
+                targetSeg = targetSeg[:-1]
+                result = result.filter(Q(segment__spelling=targetSeg+'0') | Q(segment__spelling=targetSeg+'1') | Q(segment__spelling=targetSeg+'2') | Q(segment__spelling=targetSeg+'3'))
+            else:
+                result = result.filter(segment__spelling=targetSeg)
+        print(result.query)
         
         
     result = result.order_by('sorting_code')
@@ -199,7 +207,13 @@ def advancedSegmentSearch(imageList, inputt):
     #This is how it works:
     #inputt: c [ch] ea            image.getSegmentSequence: c [ch] (ea) r 0 V
     #NoParan gets rid of the () around ea. Then it's simple substring matching. WITHOUT using regex.
-    output = [image for image in imageList if image.segment.spelling==getTargetSegment(inputt) and inputt in noParan(image.getSegmentSequence())]
+    if inputt.endswith('*'):
+        output = [image for image in imageList if inputt[:-1]+'0' in noParan(image.getSegmentSequence())]
+        output += [image for image in imageList if inputt[:-1]+'1' in noParan(image.getSegmentSequence())]
+        output += [image for image in imageList if inputt[:-1]+'2' in noParan(image.getSegmentSequence())]
+        output += [image for image in imageList if inputt[:-1]+'3' in noParan(image.getSegmentSequence())]
+    else:
+        output = [image for image in imageList if inputt in noParan(image.getSegmentSequence())]
     return output
         
 def noParan(str):
@@ -314,7 +328,6 @@ def addFilesView(request):
                 path = request.GET['filepath']
             if len(request.GET['type'])>0:
                 importType = request.GET['type']
-            
     
         #get a list of tracers 
         listOfTracers = Tracer.objects.values('first_name').distinct()
@@ -328,7 +341,7 @@ def addFilesView(request):
         
         if importType=='1':
             for videoFolderName in os.listdir(path):
-                if os.path.isdir(os.path.join(path,videoFolderName)):            
+                if os.path.isdir(os.path.join(path,videoFolderName)):  
                     #Have a hashList of all of the files so that you can search for the corresponding image for each trace
                     allFilesInDir = dict()
                     for fileName in os.listdir(os.path.join(path,videoFolderName,"frames")):
@@ -341,7 +354,7 @@ def addFilesView(request):
                     for fileName in os.listdir(os.path.join(path,videoFolderName)):
                         if fileName.endswith('TextGrid') or fileName.endswith('Textgrid') or fileName.endswith('textgrid'):
                             textGridPath = os.path.join(path,videoFolderName,fileName)
-                            break 
+                            break
                     #Go through all of the images and traces and save them in allFilesInDir
                     for fullFileName in os.listdir(os.path.join(path,videoFolderName,"frames")): 
                         if fullFileName.endswith('txt'):
@@ -370,7 +383,6 @@ def addFilesView(request):
                         newvideo.save()
                     else:
                         continue
-                   
                     #Now add all of the images and their traces to the database:
                     images = [] #A list of Image objects that will be sent to TextGridReader
                     for imageName, imageRep in allFilesInDir.items():
@@ -383,6 +395,7 @@ def addFilesView(request):
     
                     #Get a list of the images (filter out the trace files)
                     images = sorted(images,key=lambda image:image.title)
+                    
                     readTextGrid(textGridPath,images)
                     Image.objects.bulk_create(images)
                     midway = time.time()
@@ -421,9 +434,11 @@ def addFilesView(request):
             for subjectFolderName in os.listdir(path):
                 if not os.path.isdir(os.path.join(path,subjectFolderName)):
                     continue
-                splitWavesDirPath = os.listdir(os.path.join(path,subjectFolderName,"splitWavesDir"))
-                for sentenceFolderName in splitWavesDirPath:
-                    sentencePath = os.path.join(path,subjectFolderName,"splitWavesDir",sentenceFolderName)
+                splitWavesDirPath = os.path.join(path,subjectFolderName,"split_wavs")
+                if not os.path.isdir(splitWavesDirPath):
+                    continue
+                for sentenceFolderName in os.listdir(splitWavesDirPath):
+                    sentencePath = os.path.join(splitWavesDirPath,sentenceFolderName)
                     if not os.path.isdir(sentencePath):
                         continue
                     for potentialTextGrid in os.listdir(sentencePath):
@@ -469,15 +484,6 @@ def addFilesView(request):
                         newvideo.save()
                     else:
                         continue
-                    
-                    print(Video.objects.count())
-                    videos = Video.objects.all()
-                    for v in videos:
-                        if v.project_id is not None:
-                            print("v: "+v.title+"\t"+str(v.project_id))
-                        else:
-                            print("v: "+v.title+"\tNone")
-                            
                     #Now add all of the images and their traces to the database:
                     images = [] #A list of Image objects that will be sent to TextGridReader
                     for imageName, imageRep in allFilesInDir.items():

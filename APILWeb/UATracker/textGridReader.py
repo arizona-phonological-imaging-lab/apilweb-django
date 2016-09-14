@@ -2,31 +2,40 @@ from textgrid import TextGrid
 from UATracker.models import Image,Word,Segment
 import re,time
 dbTimeInTG = 0
-
+import pdb
 
 def readTextGrid(tgAddress, images):
     global dbTimeInTG
+    phonePattern = re.compile('(^[Pp]hone(s{0,1})$)|(^[Ss]egment(s{0,1})$)')
+    wordPattern = re.compile('^[Ww]ord(s{0,1})$')
     start = time.time()
     tg = TextGrid()
     tg.read(tgAddress)
     duration = tg.maxTime - tg.minTime
     imageLength = duration/len(images)
     words = []
-        
+    tiers = tg.tiers
+    if not wordPattern.match(tg.getNames()[0]):
+        tiers = reversed(tg.tiers)
     #This loop handles words and segments at once, because many of the operations are shared    
-    for tier in tg:
+    for tier in tiers:
         imageCounter = -1
         wordCounter = 0
-        if tier.name!="Words" and tier.name!="Segments":
+        if not wordPattern.match(tier.name) and not phonePattern.match(tier.name):
             print ("Unexpected tier name: "+tier.name)
+        else:
+            if wordPattern.match(tier.name):
+                tierType = 'Words'
+            else:
+                tierType = 'Segments'
         for interval in tier.intervals:
             mark = interval.mark
             simpleSpelling = getSimpleSpelling(mark)
-            if len(mark)<1 and tier.name=="Words":
+            if len(mark)<1 and tierType=='Words':
                 continue
             #Add the new segment/word to the DB
             if len(mark)>0:
-                wordOrSeg = addIntervalToDB(mark,simpleSpelling,tier.name)    #the third arg tells whether it is a word or a segment
+                wordOrSeg = addIntervalToDB(mark,simpleSpelling,tierType)    #the third arg tells whether it is a word or a segment
             else:
                 continue
             #assign the segment/word to all of the images it covers:
@@ -46,28 +55,25 @@ def readTextGrid(tgAddress, images):
                 if imageMax<interval.minTime:
                     continue
                 if imageCenter>interval.minTime and imageCenter<interval.maxTime:
-                    assignMainObject(image,wordOrSeg,tier.name)
+                    assignMainObject(image,wordOrSeg,tierType)
                 #image has startSegment:
                 elif imageCenter>interval.maxTime and imageMin<interval.maxTime:
-                    assignStartObject(image,wordOrSeg,tier.name)
+                    assignStartObject(image,wordOrSeg,tierType)
                 #image has endSegment:
                 elif imageCenter<interval.minTime and imageMax>interval.minTime:
-                    assignEndObject(image,wordOrSeg,tier.name)
+                    assignEndObject(image,wordOrSeg,tierType)
                 #image occurs after the interval
                 else:
                     imageCounter -= 1
                     break
             #Save it somewhere if it is a word:
-            if tier.name=='Words':
+            if tierType=='Words':
                 word = WordEntry("","",interval.maxTime,wordOrSeg.id)
                 words.append(word)
             #Now assign the segment to the word if it is a segment
-            if tier.name=='Segments':
+            if tierType=='Segments':
                 #Increment the words until you reach a word that covers the current segment:
-                while words[wordCounter].maxTime<interval.minTime:
-#                     file = open('log.txt', 'w')
-#                     file.write(words[wordCounter].maxTime+"\t"+interval.minTime+'\n')
-#                     file.close()
+                while words[wordCounter].maxTime<=interval.minTime:
                     wordCounter += 1
                 word = words[wordCounter]
                 id = wordOrSeg.id
@@ -84,7 +90,7 @@ def readTextGrid(tgAddress, images):
     elapsed = str(end-start)
     file.write("textgrid: \t"+elapsed+'\n')
     file.write("dbInTG: \t"+str(dbTimeInTG)+'\n')
-    file.close()           
+    file.close()
  
 def assignMainObject(image,object,type): #e.g. (<image234>,[the id of the segment],"Segments")
      if type=="Words":
