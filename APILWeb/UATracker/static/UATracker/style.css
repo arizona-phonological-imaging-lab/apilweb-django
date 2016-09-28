@@ -203,6 +203,9 @@ label{
 	background-color: white;
 	border: 1px solid grey;
 }
+#downloadDialog{
+	height: 160px;
+}
 .dialogBoxBig{
 	position: fixed;
 	right: 0;
@@ -252,6 +255,9 @@ label{
 .menuButton:hover{
 	background-color: #aaa;
 	cursor: default;
+}
+a:visited{
+	color: inherit
 }
 .dropdownMenu{
 	visibility: hidden;

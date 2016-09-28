@@ -6,9 +6,9 @@
 
 
 <div class ="all"> 
-
 <!-- THE MENU BAR -->
 <div class="generalBox menuBar">
+	<a href="/../uat/1"><div class = 'menuButton homelink'>Home</div></a>
 	<div class='menuButton' id='downloadMenuButton' onClick="showMenu('download')">Download</div>
 	<div class='menuButton' id='tagsMenuButton' onClick="showMenu('tags')">Tags</div>
 	<div class='menuButton' id='viewMenuButton' onClick="showMenu('view')">View</div>
@@ -142,8 +142,13 @@
 		<br>
 		<form method="post" action="../download/">
 			{% csrf_token %}
+			<div class='dialogBoxText'>
+				<input type="radio" name="downloadstructure" value="directories"> Package images of different videos in separate folders<br>
+				<input type="radio" name="downloadstructure" value="names" checked> Indicate video titles in image names<br>
+			</div>
 			<input type="hidden" name="ids" id="theHiddenField" value="nothingYet"></input>
-			<input type="submit" value="Download" onClick="removeDialog()"/>
+			<input type="hidden" name="withtraces" id="theHiddenField2" value="0"></input>
+			<input type="submit" value="Download" onClick="removeDialog()"/></input>
 			<button type="button" onClick="removeDialog()" id="cancel5">Cancel</button>
 		</form>
 	</div>
@@ -162,8 +167,8 @@
 </div>
 <div id='fullScreen'></div>
 <div class='dropdownMenu' id='downloadMenu'>
-	<div class='dropdownMenuItem' onClick="downloadBufferImages('false')">Download buffer images</div>
-	<div class='dropdownMenuItem'>Download buffer images with traces</div>
+	<div class='dropdownMenuItem' onClick="downloadBufferImages(0)">Download buffer images</div>
+	<div class='dropdownMenuItem' onClick="downloadBufferImages(1)">Download buffer images with traces</div>
 </div>
 <div class='dropdownMenu' id='tagsMenu'>
 	<div class='dropdownMenuItem' onClick='tagBuffer()'>Tag buffer images</div>

@@ -29,16 +29,27 @@ def imageListView(request, page):
 @ensure_csrf_cookie
 def downloadView(request):
     imageList = request.POST.get('ids')
-    isWithTrace = request.POST.get('withTrace')
+    isWithTrace = request.POST.get('withtraces')
+    downloadStructure = request.POST.get('downloadstructure')
     zf = zipfile.ZipFile("imgs.zip", "w")
     imageList = imageList.split(',')
+    print(imageList)
     for id in imageList:
         theImage = Image.objects.get(pk=id)
         theAddress = theImage.address
-        theName = os.path.basename(theAddress)
+        if isWithTrace=='1':
+            traceObjs = theImage.trace_set.all()
+            for trace in traceObjs:
+                abs_src = os.path.abspath(trace.address)
+                if downloadStructure=='directories':
+                    zf.write(abs_src, os.path.join("UATracker_download", theImage.video.project.title, theImage.video.title, theImage.title+"_"+trace.tracer.first_name+".txt"))
+                else:
+                    zf.write(abs_src, os.path.join("UATracker_download", theImage.video.project.title+"_"+theImage.video.title+"_"+theImage.title+"_"+trace.tracer.first_name+".txt"))
         abs_src = os.path.abspath(theAddress)
-        print(abs_src)
-        zf.write(abs_src, os.path.join("imgs", theName))
+        if downloadStructure=='directories':
+            zf.write(abs_src, os.path.join("UATracker_download", theImage.video.project.title, theImage.video.title, theImage.title))
+        else:
+            zf.write(abs_src, os.path.join("UATracker_download", theImage.video.project.title+"_"+theImage.video.title+"_"+theImage.title))
     zf.close()
     fsock = open('imgs.zip',"rb")
     response = HttpResponse(fsock, content_type='application/zip', )
@@ -346,7 +357,7 @@ def addFilesView(request):
                     for fileName in os.listdir(os.path.join(path,videoFolderName,"frames")):
                         allFilesInDir[fileName] = 1
                     subject = re.search(bigdirpattern,videoFolderName).group(1)
-                    newvideo = Video(project=newproject,subject=subject,title=videoFolderName)
+                    newvideo = Video(project=newproject,subject=subject,title=videoFolderName+"_"+subject)
                     sawAnyFramesInDir = 0
                     #Find the TextGrid file:
                     textGridPath = ''
@@ -391,7 +402,7 @@ def addFilesView(request):
                         if pngpattern.match(imageName):
                             fullpath = os.path.join(path, videoFolderName, "frames", imageName)
                             cleanTitle = re.sub('.*?(\d+\..*)$','\\1',imageName)
-                            newImage = Image(title=cleanTitle, video=newvideo, address=fullpath, sorting_code=projTitle+videoFolderName+cleanTitle, trace_count=len(imageRep.traces))
+                            newImage = Image(title=cleanTitle, video=newvideo, address=fullpath, sorting_code=projTitle+newvideo.title+cleanTitle, trace_count=len(imageRep.traces))
                             images.append(newImage)
                             imageRep.imageObj = newImage
     
@@ -493,7 +504,7 @@ def addFilesView(request):
                         if pngpattern.match(imageName):
                             fullpath = os.path.join(imageAndTraceFolderPath, imageName)
                             cleanTitle = re.sub('.*?(\d+\..*)$','\\1',imageName)
-                            newImage = Image(title=cleanTitle, video=newvideo, address=fullpath, sorting_code=projTitle+sentenceFolderName+cleanTitle, trace_count=len(imageRep.traces))
+                            newImage = Image(title=cleanTitle, video=newvideo, address=fullpath, sorting_code=projTitle+newvideo.title+cleanTitle, trace_count=len(imageRep.traces))
                             images.append(newImage)
                             imageRep.imageObj = newImage
     
