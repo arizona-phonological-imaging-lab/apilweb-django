@@ -12,4 +12,5 @@ urlpatterns = [
     url(r'^handle-search/(?P<page>[0-9]+)/$', views.searchHandlerView, name='searchHandler'),
     url(r'^addfiles/$', views.addFilesView, name='addFiles'),
     url(r'^successfullyadded/$', views.addsuccess, name='addFiles'),
+    url(r'^removeproj/$', views.removeProjView, name='removeProj'),
 ]

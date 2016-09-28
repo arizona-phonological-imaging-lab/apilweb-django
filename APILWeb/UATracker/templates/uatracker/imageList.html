@@ -151,11 +151,13 @@
 <div id='removeProjDialog' class='dialogBox'>
 	<div class='dialogBoxHeader'>Remove a project...</div>
 	<div class='dialogBoxBody'>
-		<div class='dialogBoxText'>Select the project you want to remove:</div>
-		<div id="removeProj">{{form.project}}</div>
-		<br>
-		<button type="button" onClick="removeProj()" id="removeExpButton">Submit</button>
-		<button type="button" onClick="removeDialog()" id="cancel7">Cancel</button>
+		<form action="/whatever/" method="post" id="removeProjForm">
+			<div class='dialogBoxText'>Select the project you want to remove:</div>
+			<div id="projectTitleDDMenu">{{form.project}}</div>
+			<br>
+			<button type="button" onClick="submitRemoveProj()" id="removeProjButton">Submit</button>
+			<button type="button" onClick="removeDialog()" id="cancel7">Cancel</button>
+		</form>
 	</div>
 </div>
 <div id='fullScreen'></div>
@@ -178,7 +180,7 @@
 	<div class='dropdownMenuItem' onClick="openImport(2)">Add standard project type 2</div>
 	<div class='dropdownMenuItem'>Add custom project</div>
 	<div class='dropdownMenuItem'>Update standard project</div>
-	<div class='dropdownMenuItem'>Remove project</div>
+	<div class='dropdownMenuItem' onClick="openRemoveProj()">Remove project</div>
 </div>
 
 <div id="importDialog" class='dialogBox dialogBoxBig'>

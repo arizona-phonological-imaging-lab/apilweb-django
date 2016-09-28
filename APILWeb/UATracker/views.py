@@ -7,6 +7,7 @@ from django.http import HttpResponse
 from django.template import RequestContext
 from UATracker.textGridReader import readTextGrid
 from math import floor
+from time import gmtime, strftime
 import re
 import time
 import pdb
@@ -176,8 +177,6 @@ def getResults(request):
                 result = result.filter(Q(segment__spelling=targetSeg+'0') | Q(segment__spelling=targetSeg+'1') | Q(segment__spelling=targetSeg+'2') | Q(segment__spelling=targetSeg+'3'))
             else:
                 result = result.filter(segment__spelling=targetSeg)
-        print(result.query)
-        
         
     result = result.order_by('sorting_code')
     if len(request.GET)>0 and len(request.GET['segment'])>0:
@@ -332,7 +331,7 @@ def addFilesView(request):
         #get a list of tracers 
         listOfTracers = Tracer.objects.values('first_name').distinct()
         
-    #     bigdirpattern = re.compile("(\d*)\w_(\d*-\d*-\d*)")
+        bigdirpattern = re.compile("(\d*)\w_(\d*-\d*-\d*)")
         pngpattern = re.compile("(frame-)?(\d*.(png|jpg|PNG|JPG|JPEG))$")
         projTitle = title
         newproject = Project(title=projTitle, language=lang)
@@ -345,7 +344,7 @@ def addFilesView(request):
                     #Have a hashList of all of the files so that you can search for the corresponding image for each trace
                     allFilesInDir = dict()
                     for fileName in os.listdir(os.path.join(path,videoFolderName,"frames")):
-                        allFilesInDir[fileName[:-4]] = 1
+                        allFilesInDir[fileName] = 1
                     subject = re.search(bigdirpattern,videoFolderName).group(1)
                     newvideo = Video(project=newproject,subject=subject,title=videoFolderName)
                     sawAnyFramesInDir = 0
@@ -358,7 +357,7 @@ def addFilesView(request):
                     #Go through all of the images and traces and save them in allFilesInDir
                     for fullFileName in os.listdir(os.path.join(path,videoFolderName,"frames")): 
                         if fullFileName.endswith('txt'):
-                            correspondingImageName = re.sub('\.[^\.]+\.traced\.txt','',fullFileName)
+                            correspondingImageName = re.sub('\.[^\.]+(\.traced){0,1}\.txt','',fullFileName)
                             if correspondingImageName in allFilesInDir:
                                 dictValue = allFilesInDir[correspondingImageName]
                                 tracer =   re.sub('^(.*\.)([^\.]+)(\.traced\.txt)','\\2',fullFileName)
@@ -369,8 +368,10 @@ def addFilesView(request):
                                     dictValue.traces.append(fullFileName)
                                     dictValue.tracers.append(tracer)
                         if pngpattern.match(fullFileName):
+                            ######
                             sawAnyFramesInDir = 1
                             dictValue = allFilesInDir[fullFileName]
+                            ######
                             if dictValue == 1:
                                 i = ImageRep(fullFileName,[],[])
                                 allFilesInDir[fullFileName] = i
@@ -380,6 +381,7 @@ def addFilesView(request):
                         if not projWasSaved:
                             newproject.save()
                             projWasSaved = True
+                        newvideo.project = newproject
                         newvideo.save()
                     else:
                         continue
@@ -428,6 +430,7 @@ def addFilesView(request):
                     file.write("afterMidway: \t"+afterMidway+'\n')
                     file.write("full: \t"+full+'\n')
                     file.close()
+        
                         
         ####################################################################################
         else: #if importType=2
@@ -458,7 +461,7 @@ def addFilesView(request):
                     #Go through all of the images and traces and save them in allFilesInDir
                     for fullFileName in os.listdir(imageAndTraceFolderPath): 
                         if fullFileName.endswith('txt'):
-                            correspondingImageName = re.sub('\.[^\.]+\.traced\.txt','',fullFileName)
+                            correspondingImageName = re.sub('\.[^\.]+(\.traced){0,1}\.txt','',fullFileName)
                             if correspondingImageName in allFilesInDir:
                                 dictValue = allFilesInDir[correspondingImageName]
                                 tracer = re.sub('^(.*\.)([^\.]+)(\.traced\.txt)','\\2',fullFileName)
@@ -552,7 +555,16 @@ def getTracerObj(tracerName):
             tracersList[tracerName] = tracer
             return tracer
             
-    
+def removeProjView(request):
+    title = ''
+    if len(request.GET)>0:
+        if len(request.GET['project'])>0:
+            title = request.GET['project']
+    ##
+    Image.objects.filter(video__project__title=title).delete()
+    Video.objects.filter(project__title=title).delete()
+    Project.objects.filter(title=title).delete()
+    return HttpResponse("Successfully removed project.")
 
 class ImageRep:
     def __init__(self,name,trace,tracer):

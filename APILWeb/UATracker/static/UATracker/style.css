@@ -20,6 +20,7 @@ body{
 	border-radius: 0em;
 	margin-bottom: 15px;
 	padding: 2px;
+	padding-bottom: 8px;
 	font-size: 14px;
 	max-width: 750px;
 }
@@ -48,7 +49,7 @@ body{
 	padding-left: 3px;
 	padding-top: -2px;
 	padding-bottom: 1px;
-	overflow: hidden;
+	overflow: scroll;
 	white-space: nowrap;
 	background-color: rgba(54, 25, 25, 0);
 }
@@ -63,8 +64,23 @@ body{
 	background-color: #59b;
 	color: white;
 }
+.titleCell{
+	width: 90px;
+}
+.projectCell{
+	width: 103px;
+}
 .videoCell{
 	width: 103px;
+}
+.tagCell{
+	width: 50px;
+}
+.tracedByCell{
+	width: 60px;
+}
+.experimentCell{
+	width: 70px;
 }
 .wordCell{
 	max-width: 111px;

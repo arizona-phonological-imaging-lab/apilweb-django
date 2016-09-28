@@ -23,14 +23,6 @@ $(document).ready(function(event) {
 		submitImport();
 	})
 
-
-	$('#i_file').change( function(event) {
-		addFile();
-		var tmppath = URL.createObjectURL(event.target.files[0]);
-		    $("img").fadeIn("fast").attr('src',URL.createObjectURL(event.target.files[0]));
-
-		    // $("#disp_tmp_path").html("Temporary Path(Copy it and try pasting it in browser address bar) --> <strong>["+tmppath+"]</strong>");
-	})
 	activateRowSelection();
 	//Set up ajax to accomodate to Django's security demands:
 	var csrftoken = getCookie('csrftoken');
